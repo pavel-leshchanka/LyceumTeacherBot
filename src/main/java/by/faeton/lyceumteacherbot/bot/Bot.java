@@ -38,7 +38,7 @@ public class Bot extends TelegramLongPollingBot {
             "/help - Получить помощь";
     private static final String AVAILABLE = "В наличии";
     private static final String NOT_AVAILABLE = "Нет в наличии";
-    private static final String NOT_AUTHORIZER = "Вы не авторизированны";
+    private static final String NOT_AUTHORIZER = "Вы не авторизированы";
 
     @SneakyThrows
     @Override
