@@ -2,7 +2,6 @@ package by.faeton.lyceumteacherbot.utils;
 
 
 import by.faeton.lyceumteacherbot.model.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import lombok.SneakyThrows;
 
@@ -12,9 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Serializer {
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
 
     @SneakyThrows
     public List loadListState(String path) {
@@ -26,7 +22,7 @@ public class Serializer {
             String[] record = iterator.next();
             String[] split = record[0].split(";");
             User user = new User();
-            user.setId(Integer.parseInt(split[0]));
+            user.setId(split[0]);
             user.setList(split[1]);
             user.setField(split[2]);
             users.add(user);

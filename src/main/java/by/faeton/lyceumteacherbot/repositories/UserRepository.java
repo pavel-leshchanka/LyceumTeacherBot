@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +16,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserRepository {
 
-    private final List<User> usersList;
+    private final List<User> usersList = new ArrayList<>();
 
-    public Optional<User> get(Integer id) {
+    public Optional<User> get(String id) {
         Optional<User> returnedUser = usersList.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst();

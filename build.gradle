@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'by.faeton'
-version = '0.0.1-SNAPSHOT'
+version = '0.1-SNAPSHOT'
 
 java {
 	sourceCompatibility = '11'
@@ -27,18 +27,11 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
-	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-
-
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 	implementation 'com.opencsv:opencsv:5.8'
-
 	implementation 'org.telegram:telegrambots:6.8.0'
 
 
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
