@@ -23,5 +23,7 @@ public class BotConfig {
     @Value("${url.apiKey}")
     private String apiKey;
 
+    @Value("${filePath}")
+    private String filePath;
 
 }

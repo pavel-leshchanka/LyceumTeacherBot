@@ -6,6 +6,7 @@ import com.opencsv.CSVReader;
 import lombok.SneakyThrows;
 
 import java.io.FileReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -14,7 +15,8 @@ public class Serializer {
 
     @SneakyThrows
     public List loadListState(String path) {
-        CSVReader reader = new CSVReader(new FileReader(path));
+        URL fileUrl = Serializer.class.getClassLoader().getResource(path);
+        CSVReader reader = new CSVReader(new FileReader(fileUrl.getFile()));
         List<User> users = new ArrayList<>();
         List<String[]> records = reader.readAll();
         Iterator<String[]> iterator = records.iterator();

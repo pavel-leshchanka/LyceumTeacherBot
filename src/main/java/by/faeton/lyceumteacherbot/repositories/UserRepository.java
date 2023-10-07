@@ -1,6 +1,7 @@
 package by.faeton.lyceumteacherbot.repositories;
 
 
+import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.utils.Serializer;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class UserRepository {
+    @Autowired
+    private final BotConfig botConfig;
 
     private final List<User> usersList = new ArrayList<>();
 
@@ -27,7 +30,7 @@ public class UserRepository {
 
     @Autowired
     public void setUp() {
-        List list = new Serializer().loadListState("baseId.csv");
+        List list = new Serializer().loadListState(botConfig.getFilePath());
         usersList.addAll(list);
     }
 
