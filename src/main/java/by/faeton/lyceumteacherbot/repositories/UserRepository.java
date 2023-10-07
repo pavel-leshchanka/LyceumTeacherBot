@@ -30,6 +30,9 @@ public class UserRepository {
         Optional<User> returnedUser = usersList.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst();
+        if (returnedUser.isEmpty()){
+            setUp();
+        }
         return returnedUser;
     }
 
@@ -50,6 +53,7 @@ public class UserRepository {
                 list.add(user);
             }
         }
+        usersList.clear();
         usersList.addAll(list);
     }
 
