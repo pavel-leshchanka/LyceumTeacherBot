@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.config;
 
 
-import by.faeton.lyceumteacherbot.bot.Bot;
+import by.faeton.lyceumteacherbot.controllers.BotController;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -14,12 +14,12 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Component
 public class Initializer {
     @Autowired
-    private Bot bot;
+    private BotController botController;
 
     @SneakyThrows
     @EventListener({ContextRefreshedEvent.class})
     public void init() {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-        telegramBotsApi.registerBot((LongPollingBot) bot);
+        telegramBotsApi.registerBot((LongPollingBot) botController);
     }
 }

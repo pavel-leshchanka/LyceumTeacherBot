@@ -4,8 +4,8 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
 @Data
+@Configuration
 public class BotConfig {
 
     @Value("${bot.name}")
@@ -23,7 +23,7 @@ public class BotConfig {
     @Value("${url.apiKey}")
     private String apiKey;
 
-    @Value("${filePath}")
-    private String filePath;
+    @Value("${baseIdList}")
+    private String baseIdList;
 
 }

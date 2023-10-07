@@ -9,7 +9,9 @@ group = 'by.faeton'
 version = '0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '21'
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
 }
 
 configurations {
@@ -23,24 +25,13 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
 
-	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-	implementation 'com.opencsv:opencsv:5.8'
 	implementation 'org.telegram:telegrambots:6.8.0'
 
 
-}
-jar {
-	manifest{
-		attributes'Main-Class' :  'by.faeton.lyceumteacherbot.LyceumTeacherBotApplication'
-	}
-	from {
-		configurations.runtimeClasspath.collect {it.isDirectory() ? it : zipTree(it)}
-	}
-	duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 }
 
