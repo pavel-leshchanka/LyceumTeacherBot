@@ -22,21 +22,28 @@ public class BotController extends TelegramLongPollingBot {
     private final SheetListener sheetListener;
     private final UserRepository userRepository;
 
-    private static final String START = "Привет! Для начала работы выполни одну из возможных команд";
-    private static final String HELP = "/start - Начало работы\n" +
-            "/marks - Получить оценки\n" +
-            "/laboratory_notebook - Проверить наличие тетради для лабораторных работ\n" +
-            "/test_notebook - Проверить наличие тетради для контрольных работ\n" +
-            "/help - Получить помощь";
+    private static final String START = """
+            Привет!
+            Для начала работы необходимо выполнить следующие пункты:
+            1. Узнать id своего профиля. Сделать это можно через @userinfobot.
+            2. Полученный id отправить разработчику бота.
+            После внесения вашего id в базу, доступ ко всем функциям бота будет открыт.""";
+    private static final String HELP = """
+            /start - Начало работы.
+            /marks - Получить оценки.
+            /laboratory_notebook - Проверить наличие тетради для лабораторных работ.
+            /test_notebook - Проверить наличие тетради для контрольных работ.
+            /help - Получить помощь""";
     private static final String AVAILABLE = "В наличии";
     private static final String NOT_AVAILABLE = "Нет в наличии";
     private static final String NOT_AUTHORIZER = "Вы не авторизированы";
+    private static final String ANOTHER_MESSAGES = "Для начала работы выполни одну из возможных команд";
 
     @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
-        if (message != null) {
+        if (message != null && message.getText() != null) {
             String chatId = message.getChatId().toString();
             String receivedMessage = message.getText();
             SendMessage sendMessage = new SendMessage();
@@ -66,7 +73,7 @@ public class BotController extends TelegramLongPollingBot {
                     }
                 }
                 case "/help" -> sendMessage.setText(arrivedHelp());
-                default -> sendMessage.setText(arrivedStart());
+                default -> sendMessage.setText(arrivedAnother());
             }
             this.execute(sendMessage);
         }
@@ -108,6 +115,10 @@ public class BotController extends TelegramLongPollingBot {
 
     private String arrivedHelp() {
         return HELP;
+    }
+
+    private String arrivedAnother() {
+        return ANOTHER_MESSAGES;
     }
 
     public String getBotUsername() {
