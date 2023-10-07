@@ -1,11 +1,8 @@
 bot:
-  name: lyceumteacher_bot
-  token: 123
+  name: name
+  token: token
 url:
-  firstPart: https://sheets.googleapis.com/v4/spreadsheets/
-  sheetId: 123
-  apiKey: 123
-filePath: baseId.csv
-spring:
-  main:
-    web-application-type: none
+  firstPart: firstPart
+  sheetId: sheetId
+  apiKey: apiKey
+baseIdList: baseIdList
