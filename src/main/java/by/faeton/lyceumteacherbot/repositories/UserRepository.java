@@ -39,7 +39,7 @@ public class UserRepository {
     @SneakyThrows
     @PostConstruct
     public void setUp() {
-        String baseId = sheetListener.getString(botConfig.getBaseIdList());
+        String baseId = sheetListener.getSheetLine(botConfig.getBaseIdList());
         List<User> list = new ArrayList<>();
         HashMap<String, Object> result = new ObjectMapper().readValue(baseId, HashMap.class);
         ArrayList<Object> values = (ArrayList<Object>) result.get("values");

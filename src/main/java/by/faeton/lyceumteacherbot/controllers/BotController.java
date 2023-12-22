@@ -86,17 +86,17 @@ public class BotController extends TelegramLongPollingBot {
     @SneakyThrows
     private String arrivedMarks(User user) {
         String sheetText = sheetListener.getStudentMarks(user);
-        String returnedText = SheetListener.getLineToString(sheetText);
-        if (returnedText.equals("")) {
+    //    String returnedText = SheetListener.convertSheetLineToString(sheetText);
+        if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
-        return returnedText;
+        return sheetText;
     }
 
     @SneakyThrows
     private String arrivedLaboratoryNotebook(User user) {
         String sheetText = sheetListener.getStudentLaboratoryNotebook(user);
-        String returnedText = SheetListener.getLineToString(sheetText);
+        String returnedText = SheetListener.convertSheetLineToString(sheetText);
         if (returnedText.equals("")) {
             return NOT_AVAILABLE;
         }
@@ -106,7 +106,7 @@ public class BotController extends TelegramLongPollingBot {
     @SneakyThrows
     private String arrivedTestNotebook(User userId) {
         String sheetText = sheetListener.getStudentTestNotebook(userId);
-        String returnedText = SheetListener.getLineToString(sheetText);
+        String returnedText = SheetListener.convertSheetLineToString(sheetText);
         if (returnedText.equals("")) {
             return NOT_AVAILABLE;
         }
