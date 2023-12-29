@@ -30,6 +30,7 @@ public class BotController extends TelegramLongPollingBot {
             После внесения вашего id в базу, доступ ко всем функциям бота будет открыт.""";
     private static final String HELP = """
             /start - Начало работы.
+            /quarter - Четвертные оценки.
             /marks - Получить оценки.
             /laboratory_notebook - Проверить наличие тетради для лабораторных работ.
             /test_notebook - Проверить наличие тетради для контрольных работ.
