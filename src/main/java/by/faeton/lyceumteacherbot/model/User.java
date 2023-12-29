@@ -12,6 +12,8 @@ public class User {
     public static final String END_MARKS_COLUMN = "BZ";
     public static final String DATE_FIELD = "2";
     public static final String FIELD_TYPE_OF_WORK = "3";
+    public static final String START_QUARTER_MARKS_COLUMN = "E";
+    public static final String END_QUARTER_MARKS_COLUMN = "J";
 
 
     private String id;
@@ -27,22 +29,42 @@ public class User {
     }
 
     public String getMarksColumn() {
-        return getColumn(field);
+        return getMarksColumn(field);
+    }
+
+    public String getQuarterMarksColumn() {
+        return getQuarterMarksColumn(field);
     }
 
     public String getDateColumn() {
-        return getColumn(DATE_FIELD);
+        return getMarksColumn(DATE_FIELD);
+    }
+
+    public String getQuarterNameColumn() {
+        return getQuarterMarksColumn(DATE_FIELD);
     }
 
     public String getTypeOfWorkColumn() {
-        return getColumn(FIELD_TYPE_OF_WORK);
+        return getMarksColumn(FIELD_TYPE_OF_WORK);
     }
 
-    private String getColumn(String field) {
+    public String getTypeOfQuarterColumn() {
+        return getQuarterMarksColumn(FIELD_TYPE_OF_WORK);
+    }
+
+    private String getMarksColumn(String field) {
         return START_MARKS_COLUMN
                 + field
                 + ':'
                 + END_MARKS_COLUMN
+                + field;
+    }
+
+    private String getQuarterMarksColumn(String field) {
+        return START_QUARTER_MARKS_COLUMN
+                + field
+                + ':'
+                + END_QUARTER_MARKS_COLUMN
                 + field;
     }
 }

@@ -23,9 +23,17 @@ public class SheetListener {
     private final BotConfig botConfig;
 
     public String getStudentMarks(User user) {
-        String sheetLine = getSheetLine(user.getList(), user.getMarksColumn());
-        String sheetDateLine = getSheetLine(user.getList(), user.getDateColumn());
-        String sheetTypeLine = getSheetLine(user.getList(), user.getTypeOfWorkColumn());
+        String sheetLine = getSheetJSONLine(user.getList(), user.getMarksColumn());
+        String sheetDateLine = getSheetJSONLine(user.getList(), user.getDateColumn());
+        String sheetTypeLine = getSheetJSONLine(user.getList(), user.getTypeOfWorkColumn());
+        String marks = getMarksLine(sheetDateLine, sheetTypeLine, sheetLine);
+
+        return marks;
+    }
+    public String getStudentQuarterMarks(User user) {
+        String sheetLine = getSheetJSONLine(user.getList(), user.getQuarterMarksColumn());
+        String sheetDateLine = getSheetJSONLine(user.getList(), user.getQuarterNameColumn());
+        String sheetTypeLine = getSheetJSONLine(user.getList(), user.getTypeOfQuarterColumn());
         String marks = getMarksLine(sheetDateLine, sheetTypeLine, sheetLine);
 
         return marks;
@@ -33,21 +41,23 @@ public class SheetListener {
 
     public String getStudentLaboratoryNotebook(User user) {
         String field = user.getLaboratoryNotebookColumn();
-        return getSheetLine(user.getList(), field);
+        String sheetJSONLine = getSheetJSONLine(user.getList(), field);
+        return convertSheetJSONLineToString(sheetJSONLine);
     }
 
     public String getStudentTestNotebook(User user) {
         String field = user.getTestNotebookColumn();
-        return getSheetLine(user.getList(), field);
+        String sheetJSONLine = getSheetJSONLine(user.getList(), field);
+        return convertSheetJSONLineToString(sheetJSONLine);
     }
 
     @SneakyThrows
-    private String getSheetLine(String list, String field) {
+    private String getSheetJSONLine(String sheetListName, String fields) {
         String url = String.format("%s%s/values/%s%s?key=%s",
                 botConfig.getFirstPart(),
                 botConfig.getSheetId(),
-                list,
-                field.equals("") ? "" : "!" + field,
+                sheetListName,
+                fields.equals("") ? "" : "!" + fields, //todo null
                 botConfig.getApiKey());
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -58,51 +68,55 @@ public class SheetListener {
         return response.body();
     }
 
-    public String getSheetLine(String list) {
-        return getSheetLine(list, "");
+    public String getSheetJSONLine(String list) {
+        return getSheetJSONLine(list, ""); //todo null
     }
 
     @SneakyThrows
-    public static String convertSheetLineToString(String sheetText) {
-        ArrayList<Object> values = getObjects(sheetText);
-        String returnedText = new String();
+    public static String convertSheetJSONLineToString(String sheetJSONText) {
+        ArrayList<Object> values = convertJSONToList(sheetJSONText);
+        String returnedText = "";
         if (values != null) {
             ArrayList<String> sheetLine = (ArrayList<String>) values.get(0);
             for (String s : sheetLine) {
-                returnedText = returnedText + s.toString();
+                returnedText = returnedText + s.toString();//todo delete toString?
             }
         }
         return returnedText;
     }
 
     @SneakyThrows
-    public static String getMarksLine(String dateText, String typeOfWork, String sheetText) {
-        ArrayList<Object> dateValues = getObjects(dateText);
-        ArrayList<Object> typeValues = getObjects(typeOfWork);
-        ArrayList<Object> textValues = getObjects(sheetText);
-        String returnedText = new String();
+    public static String getMarksLine(String dateJSONText, String typeOfWorkJSONText, String sheetJSONText) {
+        ArrayList<Object> dateValues = convertJSONToList(dateJSONText);
+        ArrayList<Object> typeValues = convertJSONToList(typeOfWorkJSONText);
+        ArrayList<Object> textValues = convertJSONToList(sheetJSONText);
+        String returnedText = "";
         if (textValues != null) {
             ArrayList<String> dateLine = (ArrayList<String>) dateValues.get(0);
             ArrayList<String> typeLine = (ArrayList<String>) typeValues.get(0);
-            ArrayList<String> textLine = (ArrayList<String>) textValues.get(0);
+            ArrayList<String> textLine = (ArrayList<String>) textValues.get(0);//todo in method
             for (int i = 0; i < textLine.size(); i++) {
                 if (textLine.get(i) != null && !textLine.get(i).equals("")) {
-                    String s = "";
-                    if (typeLine.size() < i) {
-                        s = "";
-                    } else {
-                        s = typeLine.get(i);
+                    String date = "";
+                    if (dateLine.size() > i && dateLine.get(i) != null) {
+                        //todo check it
+                        date = dateLine.get(i);
                     }
-                    returnedText = returnedText + dateLine.get(i) + " " + s + " " + textLine.get(i) + '\n';
+                    String type = "";
+                    if (typeLine.size() > i && typeLine.get(i) != null) {
+                        //todo check it
+                        type = typeLine.get(i);
+                    }
+                    returnedText = returnedText + date + " " + type + " " + textLine.get(i) + '\n';
                 }
             }
         }
         return returnedText;
     }
 
-    private static ArrayList<Object> getObjects(String text) throws JsonProcessingException {
-        HashMap<String, Object> dateResult = new ObjectMapper().readValue(text, HashMap.class);
-        ArrayList<Object> values = (ArrayList<Object>) dateResult.get("values");
-        return values;
+    private static ArrayList<Object> convertJSONToList(String text) throws JsonProcessingException {
+        HashMap<String, Object> result = new ObjectMapper().readValue(text, HashMap.class);
+        ArrayList<Object> values = (ArrayList<Object>) result.get("values");
+        return values;//todo returned list?
     }
 }
