@@ -58,6 +58,13 @@ public class BotController extends TelegramLongPollingBot {
                         sendMessage.setText(NOT_AUTHORIZER);
                     }
                 }
+                case "/quarter" -> {
+                    if (optionalUser.isPresent()) {
+                        sendMessage.setText(arrivedQuarterMarks(optionalUser.get()));
+                    } else {
+                        sendMessage.setText(NOT_AUTHORIZER);
+                    }
+                }
                 case "/laboratory_notebook" -> {
                     if (optionalUser.isPresent()) {
                         sendMessage.setText(arrivedLaboratoryNotebook(optionalUser.get()));
@@ -86,18 +93,25 @@ public class BotController extends TelegramLongPollingBot {
     @SneakyThrows
     private String arrivedMarks(User user) {
         String sheetText = sheetListener.getStudentMarks(user);
-        String returnedText = SheetListener.getLineToString(sheetText);
-        if (returnedText.equals("")) {
+        if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
-        return returnedText;
+        return sheetText;
+    }
+
+    @SneakyThrows
+    private String arrivedQuarterMarks(User user) {
+        String sheetText = sheetListener.getStudentQuarterMarks(user);
+        if (sheetText.equals("")) {
+            return NOT_AVAILABLE;
+        }
+        return sheetText;
     }
 
     @SneakyThrows
     private String arrivedLaboratoryNotebook(User user) {
         String sheetText = sheetListener.getStudentLaboratoryNotebook(user);
-        String returnedText = SheetListener.getLineToString(sheetText);
-        if (returnedText.equals("")) {
+        if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
         return AVAILABLE;
@@ -106,8 +120,7 @@ public class BotController extends TelegramLongPollingBot {
     @SneakyThrows
     private String arrivedTestNotebook(User userId) {
         String sheetText = sheetListener.getStudentTestNotebook(userId);
-        String returnedText = SheetListener.getLineToString(sheetText);
-        if (returnedText.equals("")) {
+        if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
         return AVAILABLE;
