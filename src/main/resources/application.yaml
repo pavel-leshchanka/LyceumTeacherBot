@@ -1,0 +1,8 @@
+bot:
+  name: name
+  token: token
+url:
+  firstPart: firstPart
+  sheetId: sheetId
+  apiKey: apiKey
+baseIdList: baseIdList
