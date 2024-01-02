@@ -11,7 +11,9 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 @Component
@@ -40,6 +42,8 @@ public class BotController extends TelegramLongPollingBot {
     private static final String NOT_AUTHORIZER = "Вы не авторизированы";
     private static final String ANOTHER_MESSAGES = "Для начала работы выполни одну из возможных команд";
 
+    private HashMap<String, String> map = new HashMap<>();
+
     @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
@@ -50,6 +54,30 @@ public class BotController extends TelegramLongPollingBot {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             Optional<User> optionalUser = userRepository.get(chatId);
+
+            if (map.containsKey(chatId)) {
+                sendMessage.setText(update.getMessage().getText());
+                for (User user : userRepository.getAll()) {
+                    String id = user.getId();
+                    if (id != null && !id.equals("")) {
+                        sendMessage.setChatId(id);
+                        try {
+                            this.execute(sendMessage);
+                        } catch (TelegramApiException e) {
+
+                        }
+                    }
+                }
+                map.clear();
+            }
+
+            if (receivedMessage.contains("/send_message")) {
+                sendMessage.setText("Что отправляем?");
+                map.put(chatId, null);
+                this.execute(sendMessage);
+            }
+
+
             switch (receivedMessage) {
                 case "/start" -> sendMessage.setText(arrivedStart());
                 case "/marks" -> {
@@ -81,7 +109,8 @@ public class BotController extends TelegramLongPollingBot {
                     }
                 }
                 case "/help" -> sendMessage.setText(arrivedHelp());
-                default -> sendMessage.setText(arrivedAnother());
+                default -> {
+                }
             }
             this.execute(sendMessage);
         }

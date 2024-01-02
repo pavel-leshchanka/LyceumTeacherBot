@@ -57,4 +57,8 @@ public class UserRepository {
         usersList.addAll(list);
     }
 
+    public List<User> getAll(){
+        return usersList;
+    }
+
 }
