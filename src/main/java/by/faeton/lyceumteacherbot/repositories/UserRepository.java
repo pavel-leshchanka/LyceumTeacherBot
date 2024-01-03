@@ -6,7 +6,6 @@ import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
@@ -18,7 +17,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class UserRepository {
-    @Autowired
+
     private final BotConfig botConfig;
     private final SheetListener sheetListener;
 
@@ -28,10 +27,14 @@ public class UserRepository {
         Optional<User> returnedUser = usersList.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst();
-        if (returnedUser.isEmpty()){
+        if (returnedUser.isEmpty()) {
             setUp();
         }
         return returnedUser;
+    }
+
+    public List<User> getAll() {
+        return usersList;
     }
 
     @SneakyThrows
@@ -52,8 +55,5 @@ public class UserRepository {
         usersList.addAll(list);
     }
 
-    public List<User> getAll(){
-        return usersList;
-    }
 
 }

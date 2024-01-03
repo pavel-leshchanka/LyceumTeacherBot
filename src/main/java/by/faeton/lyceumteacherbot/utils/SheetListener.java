@@ -23,7 +23,7 @@ public class SheetListener {
     private final BotConfig botConfig;
 
     @SneakyThrows
-    private String getSheetJSON(String sheetListName, String fields) {//ok
+    private String getSheetJSON(String sheetListName, String fields) {
         String url = String.format("%s%s/values/%s%s?key=%s",
                 botConfig.getFirstPart(),
                 botConfig.getSheetId(),
@@ -39,30 +39,26 @@ public class SheetListener {
         return response.body();
     }
 
-
-    public Optional<ArrayList<ArrayList<String>>> getSheetList(String sheetListName, String fields) {//ok
+    public Optional<ArrayList<ArrayList<String>>> getSheetList(String sheetListName, String fields) {
         String sheetJSON = getSheetJSON(sheetListName, fields);
         Optional<ArrayList<ArrayList<String>>> list = convertJSONToList(sheetJSON);
         return list;
     }
 
-    public Optional<ArrayList<ArrayList<String>>> getSheetList(String list) {//ok
+    public Optional<ArrayList<ArrayList<String>>> getSheetList(String list) {
         return getSheetList(list, "");
     }
 
-    public String convertSheetJSONLineToString(String sheetJSONText) {
-        Optional<ArrayList<ArrayList<String>>> values = convertJSONToList(sheetJSONText);
+    public String getCell(String sheetListName, String field) {
+        Optional<ArrayList<ArrayList<String>>> sheetList = getSheetList(sheetListName, field);
         String returnedText = "";
-        if (values.isPresent()) {
-            ArrayList<String> sheetLine = values.get().get(0);
-            for (String s : sheetLine) {
-                returnedText = returnedText + s.toString();//todo delete toString?
-            }
+        if (sheetList.isPresent()) {
+            returnedText = sheetList.get().get(0).get(0);
         }
         return returnedText;
     }
 
-    private Optional<ArrayList<ArrayList<String>>> convertJSONToList(String text) {//ok
+    private Optional<ArrayList<ArrayList<String>>> convertJSONToList(String text) {
         ArrayList<ArrayList<String>> values;
         try {
             HashMap result = new ObjectMapper().readValue(text, HashMap.class);

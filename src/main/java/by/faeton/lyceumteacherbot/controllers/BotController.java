@@ -4,7 +4,6 @@ import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.SheetService;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -39,7 +38,7 @@ public class BotController extends TelegramLongPollingBot {
             /test_notebook - Проверить наличие тетради для контрольных работ.
             /help - Получить помощь""";
     private static final String AVAILABLE = "В наличии";
-    private static final String NOT_AVAILABLE = "Нет в наличии";
+    public static final String NOT_AVAILABLE = "Нет в наличии";
     private static final String NOT_AUTHORIZER = "Вы не авторизированы";
     private static final String ANOTHER_MESSAGES = "Для начала работы выполни одну из возможных команд";
 

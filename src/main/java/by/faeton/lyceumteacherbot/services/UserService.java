@@ -14,8 +14,10 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final BotConfig botConfig;
     private final SheetListener sheetListener;
+
     public String laboratoryNotebookColumn;
     public String testNotebookColumn;
     public String startMarksColumn;
@@ -34,42 +36,34 @@ public class UserService {
     }
 
     public String getMarksColumn(User user) {
-        return getMarksColumn(user.getField());
+        return getColumn(user.getField(), startMarksColumn, endMarksColumn);
     }
 
     public String getQuarterMarksColumn(User user) {
-        return getQuarterMarksColumn(user.getField());
+        return getColumn(user.getField(), startQuarterMarksColumn, endQuarterMarksColumn);
     }
 
     public String getDateColumn() {
-        return getMarksColumn(dateField);
+        return getColumn(dateField, startMarksColumn, endMarksColumn);
     }
 
     public String getQuarterNameColumn() {
-        return getQuarterMarksColumn(dateField);
+        return getColumn(dateField, startQuarterMarksColumn, endQuarterMarksColumn);
     }
 
     public String getTypeOfWorkColumn() {
-        return getMarksColumn(fieldTypeOfWork);
+        return getColumn(fieldTypeOfWork, startMarksColumn, endMarksColumn);
     }
 
     public String getTypeOfQuarterColumn() {
-        return getQuarterMarksColumn(fieldTypeOfWork);
+        return getColumn(fieldTypeOfWork, startQuarterMarksColumn, endQuarterMarksColumn);
     }
 
-    private String getMarksColumn(String field) {
-        return startMarksColumn
+    private String getColumn(String field, String startColumn, String endColumn) {
+        return startColumn
                 + field
                 + ':'
-                + endMarksColumn
-                + field;
-    }
-
-    private String getQuarterMarksColumn(String field) {
-        return startQuarterMarksColumn
-                + field
-                + ':'
-                + endQuarterMarksColumn
+                + endColumn
                 + field;
     }
 
