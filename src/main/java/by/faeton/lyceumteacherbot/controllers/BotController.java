@@ -3,6 +3,7 @@ package by.faeton.lyceumteacherbot.controllers;
 import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
+import by.faeton.lyceumteacherbot.services.SheetService;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,7 +22,7 @@ import java.util.Optional;
 public class BotController extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
-    private final SheetListener sheetListener;
+    private final SheetService sheetService;
     private final UserRepository userRepository;
 
     private static final String START = """
@@ -122,7 +123,7 @@ public class BotController extends TelegramLongPollingBot {
 
     @SneakyThrows
     private String arrivedMarks(User user) {
-        String sheetText = sheetListener.getStudentMarks(user);
+        String sheetText = sheetService.getStudentMarks(user);
         if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
@@ -131,7 +132,7 @@ public class BotController extends TelegramLongPollingBot {
 
     @SneakyThrows
     private String arrivedQuarterMarks(User user) {
-        String sheetText = sheetListener.getStudentQuarterMarks(user);
+        String sheetText = sheetService.getStudentQuarterMarks(user);
         if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
@@ -140,7 +141,7 @@ public class BotController extends TelegramLongPollingBot {
 
     @SneakyThrows
     private String arrivedLaboratoryNotebook(User user) {
-        String sheetText = sheetListener.getStudentLaboratoryNotebook(user);
+        String sheetText = sheetService.getStudentLaboratoryNotebook(user);
         if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
@@ -149,7 +150,7 @@ public class BotController extends TelegramLongPollingBot {
 
     @SneakyThrows
     private String arrivedTestNotebook(User userId) {
-        String sheetText = sheetListener.getStudentTestNotebook(userId);
+        String sheetText = sheetService.getStudentTestNotebook(userId);
         if (sheetText.equals("")) {
             return NOT_AVAILABLE;
         }
