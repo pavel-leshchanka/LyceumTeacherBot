@@ -82,8 +82,12 @@ public class BotController extends TelegramLongPollingBot {
                     }
                     case "/help" -> sendMessage.setText(arrivedHelp());
                     case "/send_message" -> {
-                        sendMessage.setText(WHAT_SENDING);
-                        sendFirstMessage.put(chatId, null);
+                        if (chatId.equals(botConfig.getAdminChatId())) {
+                            sendMessage.setText(WHAT_SENDING);
+                            sendFirstMessage.put(chatId, null);
+                        } else {
+                            sendMessage.setText(NO_ACCESS);
+                        }
                     }
                     default -> sendMessage.setText(arrivedAnother());
 
