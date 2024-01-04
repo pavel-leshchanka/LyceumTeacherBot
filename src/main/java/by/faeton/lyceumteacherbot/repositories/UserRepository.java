@@ -5,7 +5,6 @@ import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
@@ -23,21 +22,23 @@ public class UserRepository {
 
     private final List<User> usersList = new ArrayList<>();
 
-    public Optional<User> get(String id) {
+    public Optional<User> findById(String id) {
         Optional<User> returnedUser = usersList.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst();
         if (returnedUser.isEmpty()) {
             setUp();
+            returnedUser = usersList.stream()
+                    .filter(user -> user.getId().equals(id))
+                    .findFirst();
         }
         return returnedUser;
     }
 
-    public List<User> getAll() {
+    public List<User> getAllUsers() {
         return usersList;
     }
 
-    @SneakyThrows
     @PostConstruct
     public void setUp() {
         Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getBaseIdList());

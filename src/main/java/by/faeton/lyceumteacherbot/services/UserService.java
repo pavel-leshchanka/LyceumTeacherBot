@@ -4,7 +4,6 @@ import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -67,35 +66,23 @@ public class UserService {
                 + field;
     }
 
-    @SneakyThrows
     @PostConstruct
     public void setUp() {
         Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getSettingsList());
         if (values.isPresent()) {
             for (ArrayList<String> value : values.get()) {
-                if (value.get(0).equals("laboratoryNotebookColumn")) {
-                    laboratoryNotebookColumn = value.get(1);
-                }
-                if (value.get(0).equals("testNotebookColumn")) {
-                    testNotebookColumn = value.get(1);
-                }
-                if (value.get(0).equals("startMarksColumn")) {
-                    startMarksColumn = value.get(1);
-                }
-                if (value.get(0).equals("endMarksColumn")) {
-                    endMarksColumn = value.get(1);
-                }
-                if (value.get(0).equals("dateField")) {
-                    dateField = value.get(1);
-                }
-                if (value.get(0).equals("fieldTypeOfWork")) {
-                    fieldTypeOfWork = value.get(1);
-                }
-                if (value.get(0).equals("startQuarterMarksColumn")) {
-                    startQuarterMarksColumn = value.get(1);
-                }
-                if (value.get(0).equals("endQuarterMarksColumn")) {
-                    endQuarterMarksColumn = value.get(1);
+                switch (value.get(0)) {
+                    case "laboratoryNotebookColumn" -> laboratoryNotebookColumn = value.get(1);
+                    case "testNotebookColumn" -> testNotebookColumn = value.get(1);
+                    case "startMarksColumn" -> startMarksColumn = value.get(1);
+                    case "endMarksColumn" -> endMarksColumn = value.get(1);
+                    case "dateField" -> dateField = value.get(1);
+                    case "fieldTypeOfWork" -> fieldTypeOfWork = value.get(1);
+                    case "startQuarterMarksColumn" -> startQuarterMarksColumn = value.get(1);
+                    case "endQuarterMarksColumn" -> endQuarterMarksColumn = value.get(1);
+                    default -> {
+                        //todo log
+                    }
                 }
             }
         }

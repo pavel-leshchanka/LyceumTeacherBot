@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static by.faeton.lyceumteacherbot.controllers.BotController.NOT_AVAILABLE;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
 
-@RequiredArgsConstructor
+
 @Service
+@RequiredArgsConstructor
 public class SheetService {
 
     private final SheetListener sheetListener;
@@ -74,3 +75,4 @@ public class SheetService {
     }
 
 }
+
