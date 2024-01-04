@@ -7,3 +7,4 @@ url:
   apiKey: apiKey
 baseIdList: baseIdList
 settingsList: settingsList
+adminChatId: adminChatId

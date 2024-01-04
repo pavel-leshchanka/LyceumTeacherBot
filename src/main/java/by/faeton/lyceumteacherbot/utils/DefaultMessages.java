@@ -20,5 +20,6 @@ public class DefaultMessages {
     public static final String NOT_AUTHORIZER = "Вы не авторизированы";
     public static final String ANOTHER_MESSAGES = "Для начала работы выполни одну из возможных команд";
     public static final String WHAT_SENDING = "Что отправляем?";
+    public static final String NO_ACCESS = "Нет доступа";
 
 }

@@ -29,4 +29,7 @@ public class BotConfig {
     @Value("${settingsList}")
     private String settingsList;
 
+    @Value("${adminChatId}")
+    private String adminChatId;
+
 }
