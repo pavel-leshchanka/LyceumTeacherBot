@@ -26,4 +26,7 @@ public class BotConfig {
     @Value("${baseIdList}")
     private String baseIdList;
 
+    @Value("${settingsList}")
+    private String settingsList;
+
 }
