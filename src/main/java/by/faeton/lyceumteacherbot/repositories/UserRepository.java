@@ -5,9 +5,10 @@ import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,12 +23,15 @@ public class UserRepository {
 
     private final List<User> usersList = new ArrayList<>();
 
+    private static final Logger log = LoggerFactory.getLogger(UserRepository.class);
+
     public Optional<User> findById(String id) {
         Optional<User> returnedUser = usersList.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst();
         if (returnedUser.isEmpty()) {
-            setUp();
+            log.info("User " + id + " not found");
+            refreshContext();
             returnedUser = usersList.stream()
                     .filter(user -> user.getId().equals(id))
                     .findFirst();
@@ -39,8 +43,8 @@ public class UserRepository {
         return usersList;
     }
 
-    @PostConstruct
-    public void setUp() {
+    public void refreshContext() {
+        log.info("Called refresh context method");
         Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getBaseIdList());
         List<User> list = new ArrayList<>();
         if (values.isPresent()) {

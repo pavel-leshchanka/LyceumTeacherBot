@@ -5,9 +5,11 @@ import by.faeton.lyceumteacherbot.config.BotConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,7 +24,8 @@ public class SheetListener {
 
     private final BotConfig botConfig;
 
-    @SneakyThrows
+    private static final Logger log = LoggerFactory.getLogger(SheetListener.class);
+
     private String getSheetJSON(String sheetListName, String fields) {
         String url = String.format("%s%s/values/%s%s?key=%s",
                 botConfig.getFirstPart(),
@@ -30,12 +33,18 @@ public class SheetListener {
                 sheetListName,
                 fields.equals("") ? "" : "!" + fields,
                 botConfig.getApiKey());
+        log.info(url + " configured.");
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .build();
         HttpResponse<String> response;
-        response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            log.error("" + e);
+            throw new RuntimeException();
+        }
         return response.body();
     }
 
@@ -64,7 +73,7 @@ public class SheetListener {
             HashMap result = new ObjectMapper().readValue(text, HashMap.class);
             values = (ArrayList<ArrayList<String>>) result.get("values");
         } catch (JsonProcessingException e) {
-            //   throw new RuntimeException(e); //todo
+            log.error("" + e);
             values = null;
         }
         return Optional.ofNullable(values);

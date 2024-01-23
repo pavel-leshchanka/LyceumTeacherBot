@@ -5,6 +5,8 @@ import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.SheetService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -27,6 +29,8 @@ public class BotController extends TelegramLongPollingBot {
 
 
     private final HashMap<String, String> sendFirstMessage = new HashMap<>();
+
+    private static final Logger log = LoggerFactory.getLogger(BotController.class);
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -89,7 +93,10 @@ public class BotController extends TelegramLongPollingBot {
                             sendMessage.setText(NO_ACCESS);
                         }
                     }
-                    default -> sendMessage.setText(arrivedAnother());
+                    default -> {
+                        log.debug("Arrived another message: " + receivedMessage + " from user " + chatId);
+                        sendMessage.setText(arrivedAnother());
+                    }
 
                 }
                 sendUserMessage(sendMessage);
@@ -152,8 +159,9 @@ public class BotController extends TelegramLongPollingBot {
     public void sendUserMessage(SendMessage sendMessage) {
         try {
             execute(sendMessage);
+            log.info("User " + sendMessage.getChatId() + " message arrived.");
         } catch (TelegramApiException e) {
-            //todo
+            log.warn("User " + sendMessage.getChatId() + " message not arrived.");
         }
     }
 }
