@@ -2,20 +2,19 @@ package by.faeton.lyceumteacherbot.utils;
 
 
 import by.faeton.lyceumteacherbot.config.BotConfig;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
+import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,35 +22,30 @@ import java.util.Optional;
 public class SheetListener {
 
     private final BotConfig botConfig;
+    private final Sheets sheetsService;
 
     private static final Logger log = LoggerFactory.getLogger(SheetListener.class);
 
-    private String getSheetJSON(String sheetListName, String fields) {
-        String url = String.format("%s%s/values/%s%s?key=%s",
-                botConfig.getFirstPart(),
-                botConfig.getSheetId(),
-                sheetListName,
-                fields.equals("") ? "" : "!" + fields,
-                botConfig.getApiKey());
-        log.info(url + " configured.");
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .build();
-        HttpResponse<String> response;
-        try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            log.error("" + e);
-            throw new RuntimeException();
-        }
-        return response.body();
-    }
 
     public Optional<ArrayList<ArrayList<String>>> getSheetList(String sheetListName, String fields) {
-        String sheetJSON = getSheetJSON(sheetListName, fields);
-        Optional<ArrayList<ArrayList<String>>> list = convertJSONToList(sheetJSON);
-        return list;
+        String s = sheetListName + (fields.equals("") ? "" : "!") + fields;
+        List<String> ranges = Arrays.asList(s);
+        BatchGetValuesResponse readResult = null;
+        try {
+            readResult = sheetsService.spreadsheets().values()
+                    .batchGet(botConfig.getSheetId())
+                    .setRanges(ranges)
+                    .execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<ValueRange> valueRanges = readResult.getValueRanges();
+        ArrayList<ArrayList<String>> list = null;
+        int size = Arrays.asList(valueRanges.get(0).values().toArray()).size();
+        if (size > 2) {
+            list = (ArrayList) ((ArrayList) Arrays.asList(valueRanges.get(0).values().toArray()).get(2));
+        }
+        return Optional.ofNullable(list);
     }
 
     public Optional<ArrayList<ArrayList<String>>> getSheetList(String list) {
@@ -67,15 +61,17 @@ public class SheetListener {
         return returnedText;
     }
 
-    private Optional<ArrayList<ArrayList<String>>> convertJSONToList(String text) {
-        ArrayList<ArrayList<String>> values;
+
+    public void writeSheet(String sheetListName, String startField, ArrayList content) {
+        ValueRange body = new ValueRange()
+                .setValues(content);
         try {
-            HashMap result = new ObjectMapper().readValue(text, HashMap.class);
-            values = (ArrayList<ArrayList<String>>) result.get("values");
-        } catch (JsonProcessingException e) {
-            log.error("" + e);
-            values = null;
+            String s = sheetListName + (startField.equals("") ? "" : "!") + startField;
+            UpdateValuesResponse result = sheetsService.spreadsheets().values()
+                    .update(botConfig.getSheetId(), s, body)
+                    .setValueInputOption("RAW")
+                    .execute();
+        } catch (IOException e) {
         }
-        return Optional.ofNullable(values);
     }
 }

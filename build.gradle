@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'by.faeton'
-version = '0.3-SNAPSHOT'
+version = '0.50-SNAPSHOT'
 
 java {
 	toolchain {
@@ -31,6 +31,14 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	implementation 'org.telegram:telegrambots:6.8.0'
+
+	implementation 'com.google.api-client:google-api-client:1.23.0'
+	implementation 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+	implementation 'com.google.apis:google-api-services-sheets:v4-rev493-1.23.0'
+
+	implementation 'com.google.api-client:google-api-client-jackson2:2.3.0'
+	implementation 'com.google.api-client:google-api-client-jackson2:1.20.0'
+
 
 
 }

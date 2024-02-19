@@ -94,7 +94,7 @@ public class BotController extends TelegramLongPollingBot {
                         }
                     }
                     default -> {
-                        log.debug("Arrived another message: " + receivedMessage + " from user " + chatId);
+                        log.info("Arrived another message: " + receivedMessage + " from user " + chatId);
                         sendMessage.setText(arrivedAnother());
                     }
 
