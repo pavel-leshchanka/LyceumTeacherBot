@@ -1,5 +1,6 @@
 package by.faeton.lyceumteacherbot.config;
 
+import by.faeton.lyceumteacherbot.services.StudentService;
 import by.faeton.lyceumteacherbot.services.UserService;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import com.google.api.client.auth.oauth2.Credential;
@@ -21,10 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Configuration
 public class Config {
@@ -32,7 +30,7 @@ public class Config {
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
     @Bean
-    public UserService setUp(SheetListener sheetListener, BotConfig botConfig) {
+    public UserService setUpUserService(SheetListener sheetListener, BotConfig botConfig) {
         UserService userService = new UserService();
         Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getSettingsList());
         if (values.isPresent()) {
@@ -52,6 +50,21 @@ public class Config {
         }
         log.info("User Service is configured");
         return userService;
+    }
+
+    @Bean
+    public StudentService setUpStudentsService(SheetListener sheetListener, BotConfig botConfig) {
+        StudentService studentService = new StudentService();
+        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getCorrespondenceOfDates());
+        HashMap<String, String> map = new HashMap<>();
+        if (values.isPresent()) {
+            for (ArrayList<String> value : values.get()) {
+                map.put(value.get(0), value.get(1));
+            }
+        }
+        studentService.setCorrespondenceOfDates(map);
+        log.info("User Service is configured");
+        return studentService;
     }
 
     @Bean
@@ -77,4 +90,5 @@ public class Config {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
+
 }

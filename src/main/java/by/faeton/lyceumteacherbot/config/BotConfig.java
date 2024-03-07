@@ -32,4 +32,10 @@ public class BotConfig {
     @Value("${adminChatId}")
     private String adminChatId;
 
+    @Value("${studentsList}")
+    private String studentsList;
+
+    @Value("${correspondenceOfDates}")
+    private String correspondenceOfDates;
+
 }

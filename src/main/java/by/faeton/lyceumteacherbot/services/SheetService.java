@@ -14,7 +14,6 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
 @Service
 @RequiredArgsConstructor
 public class SheetService {
-
     private final SheetListener sheetListener;
     private final UserService userService;
 
