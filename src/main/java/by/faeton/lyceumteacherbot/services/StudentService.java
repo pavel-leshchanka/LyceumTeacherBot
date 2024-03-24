@@ -18,6 +18,6 @@ public class StudentService {
     public String getStartCell(Student student, String dayOfMonth) {
         String s = correspondenceOfDates.get(dayOfMonth);
         String line = String.valueOf((Integer.parseInt(student.getNumber()) + 3));
-        return s + line;
+        return s + line;//todo
     }
 }

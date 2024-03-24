@@ -4,21 +4,18 @@ import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.ArrayList;
 
 @Entity
 @Data
 public class DialogAttribute {
-@Id
+    @Id
     private Long id;
 
     private DialogStarted dialogStarted;
 
     private Integer stepOfDialog;
 
-    private String firstMessage;
-    private String secondMessage;
-
-
-
+    private ArrayList<String> receivedData;
 
 }

@@ -62,16 +62,18 @@ public class SheetListener {
     }
 
 
-    public void writeSheet(String sheetListName, String startField, ArrayList content) {
+    public void writeSheet(String sheetListName, String startField, List<List<Object>> content) {
         ValueRange body = new ValueRange()
                 .setValues(content);
         try {
             String s = sheetListName + (startField.equals("") ? "" : "!") + startField;
-            UpdateValuesResponse result = sheetsService.spreadsheets().values()
+            UpdateValuesResponse result = sheetsService.spreadsheets().values()//todo what is result?
                     .update(botConfig.getSheetId(), s, body)
                     .setValueInputOption("RAW")
                     .execute();
         } catch (IOException e) {
         }
     }
+
+
 }

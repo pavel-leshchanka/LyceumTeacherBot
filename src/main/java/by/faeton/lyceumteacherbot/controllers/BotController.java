@@ -64,8 +64,13 @@ public class BotController extends TelegramLongPollingBot {
         if (byId.isPresent()) {
 
             if (byId.get().getDialogStarted().equals(DialogStarted.ABSENTEEISM)) {
-
                 if (byId.get().getStepOfDialog() == 0) {
+                    ArrayList<String> receivedData = byId.get().getReceivedData();
+                    receivedData.add(update.getCallbackQuery().getData());
+                    byId.get().setReceivedData(receivedData);
+                    byId.get().setStepOfDialog(byId.get().getStepOfDialog() + 1);
+                    dialogAttributeRepository.save(byId.get());
+
                     InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                     List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                     for (int i = 0; i < 8; i++) {
@@ -81,10 +86,13 @@ public class BotController extends TelegramLongPollingBot {
                     sendMessage.setText("Начало пропуска");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
-                    byId.get().setFirstMessage(update.getCallbackQuery().getData());
+                } else if (byId.get().getStepOfDialog() == 1) {
+                    ArrayList<String> receivedData = byId.get().getReceivedData();
+                    receivedData.add(update.getCallbackQuery().getData());
+                    byId.get().setReceivedData(receivedData);
                     byId.get().setStepOfDialog(byId.get().getStepOfDialog() + 1);
                     dialogAttributeRepository.save(byId.get());
-                } else if (byId.get().getStepOfDialog() == 1) {
+
                     InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                     List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
                     for (int i = 0; i < 8; i++) {
@@ -100,16 +108,31 @@ public class BotController extends TelegramLongPollingBot {
                     sendMessage.setText("Конец пропуска");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
-                    byId.get().setSecondMessage(update.getCallbackQuery().getData());
+                } else if (byId.get().getStepOfDialog() == 2) {
+                    ArrayList<String> receivedData = byId.get().getReceivedData();
+                    receivedData.add(update.getCallbackQuery().getData());
+                    byId.get().setReceivedData(receivedData);
                     byId.get().setStepOfDialog(byId.get().getStepOfDialog() + 1);
                     dialogAttributeRepository.save(byId.get());
-                }else if (byId.get().getStepOfDialog() == 2) {
-                    sendMessage.setText("Запись выполнена");
+
+                    sendMessage.setText("Выполняется запись");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
+                    boolean b = sheetService.writeAbsenteeism(byId.get());
+
+                    if (b){
+                        sendMessage.setText("Запись выполнена");
+                        sendUserMessage(sendMessage);
+                    } else {
+                        sendMessage.setText("Запись не выполнена. Попробуйте еще раз");
+                        sendUserMessage(sendMessage);
+                    }
                     dialogAttributeRepository.deleteById(chatId);
+
                 }
             }
+
+
         }
 
     }
@@ -188,6 +211,7 @@ public class BotController extends TelegramLongPollingBot {
                         dialogAttribute.setId(Long.valueOf(chatId));
                         dialogAttribute.setDialogStarted(DialogStarted.ABSENTEEISM);
                         dialogAttribute.setStepOfDialog(0);
+                        dialogAttribute.setReceivedData(new ArrayList<>());
                         dialogAttributeRepository.save(dialogAttribute);
 
                     } else {
