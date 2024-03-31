@@ -5,9 +5,9 @@ import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogStarted;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.model.User;
-import by.faeton.lyceumteacherbot.repositories.DialogAttributeRepository;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
+import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.SheetService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -33,9 +33,9 @@ public class BotController extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
     private final SheetService sheetService;
+    private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
     private final StudentsRepository studentsRepository;
-    private final DialogAttributeRepository dialogAttributeRepository;
 
 
     private static final Logger log = LoggerFactory.getLogger(BotController.class);
@@ -59,7 +59,7 @@ public class BotController extends TelegramLongPollingBot {
         sendMessage.setChatId(chatId);
 
 
-        Optional<DialogAttribute> byId = dialogAttributeRepository.findById(chatId);
+        Optional<DialogAttribute> byId = dialogAttributesService.find(chatId);
 
         if (byId.isPresent()) {
 
@@ -67,9 +67,7 @@ public class BotController extends TelegramLongPollingBot {
                 if (byId.get().getStepOfDialog() == 0) {
                     ArrayList<String> receivedData = byId.get().getReceivedData();
                     receivedData.add(update.getCallbackQuery().getData());
-                    byId.get().setReceivedData(receivedData);
-                    byId.get().setStepOfDialog(byId.get().getStepOfDialog() + 1);
-                    dialogAttributeRepository.save(byId.get());
+                    dialogAttributesService.nextStep(byId.get(), receivedData);
 
                     InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                     List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -77,7 +75,7 @@ public class BotController extends TelegramLongPollingBot {
                         List<InlineKeyboardButton> row = new ArrayList<>();
                         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                         inlineKeyboardButton.setText(String.valueOf(i));
-                        inlineKeyboardButton.setCallbackData(update.getCallbackQuery().getData() + i);
+                        inlineKeyboardButton.setCallbackData(String.valueOf(i));
                         row.add(inlineKeyboardButton);
                         rowsInline.add(row);
                     }
@@ -89,17 +87,15 @@ public class BotController extends TelegramLongPollingBot {
                 } else if (byId.get().getStepOfDialog() == 1) {
                     ArrayList<String> receivedData = byId.get().getReceivedData();
                     receivedData.add(update.getCallbackQuery().getData());
-                    byId.get().setReceivedData(receivedData);
-                    byId.get().setStepOfDialog(byId.get().getStepOfDialog() + 1);
-                    dialogAttributeRepository.save(byId.get());
+                    dialogAttributesService.nextStep(byId.get(), receivedData);
 
                     InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                     List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                    for (int i = 0; i < 8; i++) {
+                    for (int i = Integer.parseInt(update.getCallbackQuery().getData()); i < 8; i++) {
                         List<InlineKeyboardButton> row = new ArrayList<>();
                         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                         inlineKeyboardButton.setText(String.valueOf(i));
-                        inlineKeyboardButton.setCallbackData(update.getCallbackQuery().getData() + i);
+                        inlineKeyboardButton.setCallbackData(String.valueOf(i));
                         row.add(inlineKeyboardButton);
                         rowsInline.add(row);
                     }
@@ -111,23 +107,20 @@ public class BotController extends TelegramLongPollingBot {
                 } else if (byId.get().getStepOfDialog() == 2) {
                     ArrayList<String> receivedData = byId.get().getReceivedData();
                     receivedData.add(update.getCallbackQuery().getData());
-                    byId.get().setReceivedData(receivedData);
-                    byId.get().setStepOfDialog(byId.get().getStepOfDialog() + 1);
-                    dialogAttributeRepository.save(byId.get());
-
+                    dialogAttributesService.nextStep(byId.get(), receivedData);
                     sendMessage.setText("Выполняется запись");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
                     boolean b = sheetService.writeAbsenteeism(byId.get());
 
-                    if (b){
+                    if (b) {
                         sendMessage.setText("Запись выполнена");
                         sendUserMessage(sendMessage);
                     } else {
                         sendMessage.setText("Запись не выполнена. Попробуйте еще раз");
                         sendUserMessage(sendMessage);
                     }
-                    dialogAttributeRepository.deleteById(chatId);
+                    dialogAttributesService.finalStep(chatId);
 
                 }
             }
@@ -141,10 +134,11 @@ public class BotController extends TelegramLongPollingBot {
         Message message = update.getMessage();
         String chatId = message.getChatId().toString();
         sendMessage.setChatId(chatId);
-        Optional<DialogAttribute> byId = dialogAttributeRepository.findById(Long.valueOf(chatId));
+        Optional<DialogAttribute> byId = dialogAttributesService.find(Long.valueOf(chatId));
+        Optional<User> optionalUser = userRepository.findById(chatId);
+
         if (byId.isEmpty() && message.hasText()) {
             String receivedMessage = message.getText();
-            Optional<User> optionalUser = userRepository.findById(chatId);
 
             switch (receivedMessage) {
                 case "/start" -> sendMessage.setText(arrivedStart());
@@ -180,12 +174,7 @@ public class BotController extends TelegramLongPollingBot {
                 case "/send_message" -> {
                     if (chatId.equals(botConfig.getAdminChatId())) {
                         sendMessage.setText(WHAT_SENDING);
-
-                        DialogAttribute dialogAttribute = new DialogAttribute();
-                        dialogAttribute.setId(Long.valueOf(chatId));
-                        dialogAttribute.setDialogStarted(DialogStarted.SEND_MESSAGE);
-                        dialogAttributeRepository.save(dialogAttribute);
-
+                        dialogAttributesService.createDialog(DialogStarted.SEND_MESSAGE, Long.valueOf(chatId));
                     } else {
                         sendMessage.setText(NO_ACCESS);
                     }
@@ -207,13 +196,7 @@ public class BotController extends TelegramLongPollingBot {
                         sendMessage.setReplyMarkup(markupInline);
                         sendMessage.setText("Список класса");
 
-                        DialogAttribute dialogAttribute = new DialogAttribute();
-                        dialogAttribute.setId(Long.valueOf(chatId));
-                        dialogAttribute.setDialogStarted(DialogStarted.ABSENTEEISM);
-                        dialogAttribute.setStepOfDialog(0);
-                        dialogAttribute.setReceivedData(new ArrayList<>());
-                        dialogAttributeRepository.save(dialogAttribute);
-
+                        dialogAttributesService.createDialog(DialogStarted.ABSENTEEISM, Long.valueOf(chatId));
                     } else {
                         sendMessage.setText(NO_ACCESS);
                     }
@@ -238,7 +221,7 @@ public class BotController extends TelegramLongPollingBot {
                         sendUserMessage(sendMessage);
                     }
                 }
-                dialogAttributeRepository.deleteAllById(Long.valueOf(chatId));
+                dialogAttributesService.finalStep(Long.valueOf(chatId));
             }
         }
     }

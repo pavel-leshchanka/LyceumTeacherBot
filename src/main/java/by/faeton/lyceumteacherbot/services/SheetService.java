@@ -88,21 +88,18 @@ public class SheetService {
         int end = Integer.parseInt(receivedData.get(2));
         List list = new ArrayList<>();
         if (end>=start){
-            for (int i = 0; i < start; i++){
-                list.add(i, "");
+            for (int i = 0; i <= start; i++){
+              list.add(i, null);
             }
-            for (int i = start; i < end; i++){
-                list.add(i, "í");
+            for (int i = start; i <= end; i++){
+                list.add(i, "Ð½");
             }
         }
 
 
-        List<List<Object>> arrayLists = Arrays.asList(
-                list);
-        String startCell = studentService.getStartCell(student, String.valueOf(LocalDateTime.now().getDayOfMonth()));
+        List<List<Object>> arrayLists = Arrays.asList(list);
+        String startCell = studentService.getStartCell(student, LocalDateTime.now().getDayOfMonth(), start);
         sheetListener.writeSheet("Absenteeism", startCell, arrayLists);
-
-
 
         return true;
     }
