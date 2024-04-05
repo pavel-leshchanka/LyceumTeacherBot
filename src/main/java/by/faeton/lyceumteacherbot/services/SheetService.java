@@ -3,16 +3,13 @@ package by.faeton.lyceumteacherbot.services;
 import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
 
@@ -23,6 +20,15 @@ public class SheetService {
     private final SheetListener sheetListener;
     private final UserService userService;
     private final StudentService studentService;
+    private final StudentsRepository studentsRepository;
+    private HashMap<String, String> ass = new HashMap<>();
+
+    {
+        ass.put("с", "семейные обстоятельства");
+        ass.put("б", "болезнь");
+        ass.put("бу", "без уважительной");
+        ass.put("о", "соревнования");
+    }
 
     public String getStudentMarks(User user) {
         Optional<ArrayList<ArrayList<String>>> sheetDateLine = sheetListener.getSheetList(user.getList(), userService.getDateColumn());
@@ -52,13 +58,59 @@ public class SheetService {
         return cell;
     }
 
+    public String getA() {
+        List<Student> allStudents = studentsRepository.getAllStudents();
+        Integer columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2;
+        Student student = new Student();
+        student.setNumber(String.valueOf(1));
+        String startCell = studentService.getStartCell(student, columnNumber);
+        student.setNumber("30");
+        String endCell = studentService.getStartCell(student, columnNumber + 7);
+        Optional<ArrayList<ArrayList<String>>> sheetDateLine = sheetListener.getSheetList("Absenteeism", startCell + ":" + endCell);
+        ArrayList<ArrayList<String>> arrayLists = sheetDateLine.get();
+        String s = "10л";
+        for (int i = 0; i < arrayLists.size(); i++) {
+            if (arrayLists.get(i).size() > 0) {
+                s += "\n" + allStudents.get(i).getName() + " ";//задал имя
+                String s1 = arrayLists.get(i).get(0); //тип пропуска
+                Integer start = 0;
+                Integer end = 0;
+                for (int j = 1; j < arrayLists.get(i).size(); j++) {
+                    if (!arrayLists.get(i).get(j).equals(s1)) {
+                        end = j - 1;
+                        s += asdlk(start, end, s1);
+                        s1 = arrayLists.get(i).get(j);
+                        start = j;
+                    }
+                }
+                if (end != arrayLists.get(i).size()) {
+                    s += asdlk(start, arrayLists.get(i).size() - 1, s1);
+                }
+            }
+        }
+        return s;
+    }
+
+    private String asdlk(Integer start, Integer end, String type) {
+        String ret = "";
+        if (!type.equals("")) {
+            if (start.equals(end)) {
+                ret += start + " урок " + ass.get(type) + ". ";
+            }
+            if (!start.equals(end)) {
+                ret += start + "-" + end + " уроки " + ass.get(type) + ". ";
+            }
+        } else {
+            ret = "";
+        }
+        return ret;
+    }
+
     public String linesToString(Optional<ArrayList<ArrayList<String>>>... values) {
         ArrayList<ArrayList<String>> returnedList = new ArrayList<>();
-
         for (Optional<ArrayList<ArrayList<String>>> firstValue : values) {
             firstValue.ifPresent(arrayLists -> returnedList.add(arrayLists.get(0)));
         }
-
         String returnedText = "";
         if (returnedList.size() > 1) {
             int lastNumberListOfValues = returnedList.size() - 1;
@@ -71,7 +123,7 @@ public class SheetService {
                             returnedText = returnedText + strings.get(i) + " ";
                         }
                     }
-                    returnedText = returnedText + '\n';
+                    returnedText += '\n';
                 }
             }
         } else {
@@ -80,29 +132,29 @@ public class SheetService {
         return returnedText;
     }
 
-    public boolean writeAbsenteeism(DialogAttribute dialogAttribute) {//todo
+    public boolean writeAbsenteeism(DialogAttribute dialogAttribute) {
         ArrayList<String> receivedData = dialogAttribute.getReceivedData();
-        Student student = new Student();
-        student.setNumber(receivedData.get(0));
-        int start = Integer.parseInt(receivedData.get(1));
-        int end = Integer.parseInt(receivedData.get(2));
-        List list = new ArrayList<>();
-        if (end>=start){
-            for (int i = 0; i <= start; i++){
-              list.add(i, null);
+        Optional<Student> optionalStudent = studentsRepository.findByNumber(receivedData.get(0));
+        if (optionalStudent.isPresent() && receivedData.size() == 4) {
+            Student student = optionalStudent.get();
+            int startOfAbsenteeism = Integer.parseInt(receivedData.get(1));
+            int endOfAbsenteeism = Integer.parseInt(receivedData.get(2));
+            String typeOfAbsenteeism = receivedData.get(3);
+            List list = new ArrayList<>();
+            if (endOfAbsenteeism >= startOfAbsenteeism) {
+                for (int i = 0; i <= startOfAbsenteeism; i++) {
+                    list.add(i, null);
+                }
+                for (int i = startOfAbsenteeism; i <= endOfAbsenteeism; i++) {
+                    list.add(i, typeOfAbsenteeism);
+                }
             }
-            for (int i = start; i <= end; i++){
-                list.add(i, "н");
-            }
+            List<List<Object>> arrayLists = Arrays.asList(list);
+            Integer columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2 + startOfAbsenteeism;
+            String startCell = studentService.getStartCell(student, columnNumber);
+            sheetListener.writeSheet("Absenteeism", startCell, arrayLists);//todo list name
+            return true;
         }
-
-
-        List<List<Object>> arrayLists = Arrays.asList(list);
-        String startCell = studentService.getStartCell(student, LocalDateTime.now().getDayOfMonth(), start);
-        sheetListener.writeSheet("Absenteeism", startCell, arrayLists);
-
-        return true;
+        return false;
     }
-
 }
-

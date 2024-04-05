@@ -3,34 +3,29 @@ package by.faeton.lyceumteacherbot.services;
 import by.faeton.lyceumteacherbot.model.Student;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.HashMap;
+import org.springframework.stereotype.Service;
 
 @Data
+@Service
 @NoArgsConstructor
 public class StudentService {
 
+    private static final Integer NUMBER_OF_LETTERS = 26;
+    private static final Integer SHIFT_TO_LETTER_A = 64;
+    private static final Integer SHIFT_TO_FIRST_COLUMN = 3; //todo hardcode is not well
 
 
-    private HashMap<String, String> correspondenceOfDates;
-
-    public String getStartCell(Student student, Integer dayOfMonth, Integer shift) {
-        int i = dayOfMonth * 8 - 7 + 2 + shift;
-        String s = "";
-        while (i>26){
-            int i1 = i / 26;
-            int ost=i-i1*26;
-            char f = (char) (ost+64);
-            s=f+s;
-            i=i1;
+    public String getStartCell(Student student, Integer columnNumber) {
+        int number = columnNumber;
+        String startCell = "";
+        while (number > NUMBER_OF_LETTERS) {
+            int letterNumber = number % NUMBER_OF_LETTERS;
+            char letter = (char) (letterNumber + SHIFT_TO_LETTER_A);
+            startCell = letter + startCell;
+            number /= NUMBER_OF_LETTERS;
         }
-        s=(char) (i+64)+s;
-
-        String line = String.valueOf((Integer.parseInt(student.getNumber()) + 3));
-        return s + line;//todo
-    }
-
-    public String getStartCell(Student student, Integer dayOfMonth) {
-        return getStartCell(student, dayOfMonth, 0);
+        startCell = (char) (number + SHIFT_TO_LETTER_A) + startCell;
+        String line = String.valueOf((Integer.parseInt(student.getNumber()) + SHIFT_TO_FIRST_COLUMN));
+        return startCell + line;
     }
 }

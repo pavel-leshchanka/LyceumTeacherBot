@@ -23,7 +23,7 @@ public class StudentsRepository {
 
     private final List<Student> studentsList = new ArrayList<>();
 
-    private static final Logger log = LoggerFactory.getLogger(UserRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(StudentsRepository.class);
 
     public Optional<Student> findByNumber(String number) {
         Optional<Student> returnedStudent = studentsList.stream()

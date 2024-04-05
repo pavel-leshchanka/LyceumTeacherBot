@@ -35,7 +35,4 @@ public class BotConfig {
     @Value("${studentsList}")
     private String studentsList;
 
-    @Value("${correspondenceOfDates}")
-    private String correspondenceOfDates;
-
 }

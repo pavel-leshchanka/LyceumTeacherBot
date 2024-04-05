@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Configuration
 public class Config {
@@ -55,14 +58,6 @@ public class Config {
     @Bean
     public StudentService setUpStudentsService(SheetListener sheetListener, BotConfig botConfig) {
         StudentService studentService = new StudentService();
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getCorrespondenceOfDates());
-        HashMap<String, String> map = new HashMap<>();
-        if (values.isPresent()) {
-            for (ArrayList<String> value : values.get()) {
-                map.put(value.get(0), value.get(1));
-            }
-        }
-        studentService.setCorrespondenceOfDates(map);
         log.info("User Service is configured");
         return studentService;
     }

@@ -68,18 +68,7 @@ public class BotController extends TelegramLongPollingBot {
                     ArrayList<String> receivedData = byId.get().getReceivedData();
                     receivedData.add(update.getCallbackQuery().getData());
                     dialogAttributesService.nextStep(byId.get(), receivedData);
-
-                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                    for (int i = 0; i < 8; i++) {
-                        List<InlineKeyboardButton> row = new ArrayList<>();
-                        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-                        inlineKeyboardButton.setText(String.valueOf(i));
-                        inlineKeyboardButton.setCallbackData(String.valueOf(i));
-                        row.add(inlineKeyboardButton);
-                        rowsInline.add(row);
-                    }
-                    markupInline.setKeyboard(rowsInline);
+                    InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(List.of(0, 1, 2, 3, 4, 5, 6, 7));
                     sendMessage.setReplyMarkup(markupInline);
                     sendMessage.setText("Начало пропуска");
                     sendMessage.setChatId(chatId);
@@ -88,23 +77,21 @@ public class BotController extends TelegramLongPollingBot {
                     ArrayList<String> receivedData = byId.get().getReceivedData();
                     receivedData.add(update.getCallbackQuery().getData());
                     dialogAttributesService.nextStep(byId.get(), receivedData);
-
-                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                    for (int i = Integer.parseInt(update.getCallbackQuery().getData()); i < 8; i++) {
-                        List<InlineKeyboardButton> row = new ArrayList<>();
-                        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-                        inlineKeyboardButton.setText(String.valueOf(i));
-                        inlineKeyboardButton.setCallbackData(String.valueOf(i));
-                        row.add(inlineKeyboardButton);
-                        rowsInline.add(row);
-                    }
-                    markupInline.setKeyboard(rowsInline);
+                    InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(List.of(0, 1, 2, 3, 4, 5, 6, 7));
                     sendMessage.setReplyMarkup(markupInline);
                     sendMessage.setText("Конец пропуска");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
                 } else if (byId.get().getStepOfDialog() == 2) {
+                    ArrayList<String> receivedData = byId.get().getReceivedData();
+                    receivedData.add(update.getCallbackQuery().getData());
+                    dialogAttributesService.nextStep(byId.get(), receivedData);
+                    InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(List.of("б", "с", "о", "бу"));
+                    sendMessage.setReplyMarkup(markupInline);
+                    sendMessage.setText("Тип пропуска");
+                    sendMessage.setChatId(chatId);
+                    sendUserMessage(sendMessage);
+                } else if (byId.get().getStepOfDialog() == 3) {
                     ArrayList<String> receivedData = byId.get().getReceivedData();
                     receivedData.add(update.getCallbackQuery().getData());
                     dialogAttributesService.nextStep(byId.get(), receivedData);
@@ -129,6 +116,7 @@ public class BotController extends TelegramLongPollingBot {
         }
 
     }
+
 
     private void updateHasMessage(Update update, SendMessage sendMessage) {
         Message message = update.getMessage();
@@ -159,6 +147,13 @@ public class BotController extends TelegramLongPollingBot {
                 case "/laboratory_notebook" -> {
                     if (optionalUser.isPresent()) {
                         sendMessage.setText(arrivedLaboratoryNotebook(optionalUser.get()));
+                    } else {
+                        sendMessage.setText(NOT_AUTHORIZER);
+                    }
+                }
+                case "/labo" -> {
+                    if (optionalUser.isPresent()) {
+                        sendMessage.setText(sheetService.getA());
                     } else {
                         sendMessage.setText(NOT_AUTHORIZER);
                     }
@@ -286,5 +281,20 @@ public class BotController extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             log.warn("User " + sendMessage.getChatId() + " message not arrived.");
         }
+    }
+
+    private InlineKeyboardMarkup getInlineKeyboardMarkup(List list) {
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+            inlineKeyboardButton.setText(String.valueOf(list.get(i)));
+            inlineKeyboardButton.setCallbackData(String.valueOf(list.get(i)));
+            row.add(inlineKeyboardButton);
+            rowsInline.add(row);
+        }
+        markupInline.setKeyboard(rowsInline);
+        return markupInline;
     }
 }

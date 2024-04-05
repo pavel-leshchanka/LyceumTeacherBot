@@ -71,7 +71,7 @@ public class SheetListener {
                     .update(botConfig.getSheetId(), s, body)
                     .setValueInputOption("RAW")
                     .execute();
-        } catch (IOException e) {
+        } catch (IOException e) {//todo
         }
     }
 
