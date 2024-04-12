@@ -8,6 +8,7 @@ import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -21,14 +22,8 @@ public class SheetService {
     private final UserService userService;
     private final StudentService studentService;
     private final StudentsRepository studentsRepository;
-    private HashMap<String, String> ass = new HashMap<>();
+    private final HashMap<String, String> ass;
 
-    {
-        ass.put("с", "семейные обстоятельства");
-        ass.put("б", "болезнь");
-        ass.put("бу", "без уважительной");
-        ass.put("о", "соревнования");
-    }
 
     public String getStudentMarks(User user) {
         Optional<ArrayList<ArrayList<String>>> sheetDateLine = sheetListener.getSheetList(user.getList(), userService.getDateColumn());
@@ -156,5 +151,14 @@ public class SheetService {
             return true;
         }
         return false;
+    }
+
+    @PostConstruct
+    private void setUp() {
+        Optional<ArrayList<ArrayList<String>>> absenteeism = sheetListener.getSheetList("Absenteeism", "A35:B38");
+        ArrayList<ArrayList<String>> arrayLists = absenteeism.get();
+        for (ArrayList<String> arrayList : arrayLists) {
+            ass.put(arrayList.get(0), arrayList.get(1));
+        }
     }
 }

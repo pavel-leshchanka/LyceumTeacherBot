@@ -2,6 +2,7 @@ package by.faeton.lyceumteacherbot.repositories;
 
 
 import by.faeton.lyceumteacherbot.config.BotConfig;
+import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class StudentsRepository {
 
     private final BotConfig botConfig;
+    private final SheetListNameConfig sheetListNameConfig;
     private final SheetListener sheetListener;
 
     private final List<Student> studentsList = new ArrayList<>();
@@ -46,7 +48,7 @@ public class StudentsRepository {
 
     public void refreshContext() {
         log.info("Called refresh context method");
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getStudentsList(), "A4:B33");
+        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(sheetListNameConfig.studentsList(), "A4:B33");
         List<Student> list = new ArrayList<>();
         if (values.isPresent()) {
             for (ArrayList<String> value : values.get()) {

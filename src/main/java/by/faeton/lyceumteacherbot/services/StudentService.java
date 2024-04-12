@@ -18,6 +18,7 @@ public class StudentService {
     public String getStartCell(Student student, Integer columnNumber) {
         int number = columnNumber;
         String startCell = "";
+
         while (number > NUMBER_OF_LETTERS) {
             int letterNumber = number % NUMBER_OF_LETTERS;
             char letter = (char) (letterNumber + SHIFT_TO_LETTER_A);
@@ -25,6 +26,7 @@ public class StudentService {
             number /= NUMBER_OF_LETTERS;
         }
         startCell = (char) (number + SHIFT_TO_LETTER_A) + startCell;
+
         String line = String.valueOf((Integer.parseInt(student.getNumber()) + SHIFT_TO_FIRST_COLUMN));
         return startCell + line;
     }

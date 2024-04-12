@@ -2,10 +2,12 @@ package by.faeton.lyceumteacherbot.config;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 @Data
-@Configuration
+@Component
+@ConfigurationProperties(prefix = "url")
 public class BotConfig {
 
     @Value("${bot.name}")
@@ -23,16 +25,7 @@ public class BotConfig {
     @Value("${url.apiKey}")
     private String apiKey;
 
-    @Value("${baseIdList}")
-    private String baseIdList;
-
-    @Value("${settingsList}")
-    private String settingsList;
-
     @Value("${adminChatId}")
     private String adminChatId;
-
-    @Value("${studentsList}")
-    private String studentsList;
 
 }

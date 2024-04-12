@@ -1,5 +1,6 @@
 package by.faeton.lyceumteacherbot.services;
 
+import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,17 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserService {
 
-    private String laboratoryNotebookColumn;
-    private String testNotebookColumn;
-    private String startMarksColumn;
-    private String endMarksColumn;
-    private String dateField;
-    private String fieldTypeOfWork;
-    private String startQuarterMarksColumn;
-    private String endQuarterMarksColumn;
+ //   private String laboratoryNotebookColumn;
+ //   private String testNotebookColumn;
+ //   private String startMarksColumn;
+ //   private String endMarksColumn;
+ //   private String dateField;
+ //   private String fieldTypeOfWork;
+ //   private String startQuarterMarksColumn;
+ //   private String endQuarterMarksColumn;
+    FieldsNameConfig fieldsNameConfig;
 
     public String getLaboratoryNotebookColumn(User user) {
-        return laboratoryNotebookColumn + user.getField();
+        return fieldsNameConfig.getLaboratoryNotebookColumn() + user.getField();
     }
 
     public String getTestNotebookColumn(User user) {

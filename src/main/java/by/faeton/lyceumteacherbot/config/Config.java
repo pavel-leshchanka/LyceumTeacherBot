@@ -2,7 +2,6 @@ package by.faeton.lyceumteacherbot.config;
 
 import by.faeton.lyceumteacherbot.services.StudentService;
 import by.faeton.lyceumteacherbot.services.UserService;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -22,10 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Configuration
 public class Config {
@@ -33,30 +30,21 @@ public class Config {
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
     @Bean
-    public UserService setUpUserService(SheetListener sheetListener, BotConfig botConfig) {
+    public UserService setUpUserService(FieldsNameConfig fieldsNameConfig) {
         UserService userService = new UserService();
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getSettingsList());
-        if (values.isPresent()) {
-            for (ArrayList<String> value : values.get()) {
-                switch (value.get(0)) {
-                    case "laboratoryNotebookColumn" -> userService.setLaboratoryNotebookColumn(value.get(1));
-                    case "testNotebookColumn" -> userService.setTestNotebookColumn(value.get(1));
-                    case "startMarksColumn" -> userService.setStartMarksColumn(value.get(1));
-                    case "endMarksColumn" -> userService.setEndMarksColumn(value.get(1));
-                    case "dateField" -> userService.setDateField(value.get(1));
-                    case "fieldTypeOfWork" -> userService.setFieldTypeOfWork(value.get(1));
-                    case "startQuarterMarksColumn" -> userService.setStartQuarterMarksColumn(value.get(1));
-                    case "endQuarterMarksColumn" -> userService.setEndQuarterMarksColumn(value.get(1));
-                    default -> log.warn("Key " + value.get(0) + "not fount.");
-                }
-            }
-        }
-        log.info("User Service is configured");
+        userService.setLaboratoryNotebookColumn(fieldsNameConfig.getLaboratoryNotebookColumn());
+        userService.setTestNotebookColumn(fieldsNameConfig.getTestNotebookColumn());
+        userService.setStartMarksColumn(fieldsNameConfig.getStartMarksColumn());
+        userService.setEndMarksColumn(fieldsNameConfig.getEndMarksColumn());
+        userService.setDateField(fieldsNameConfig.getDateField());
+        userService.setFieldTypeOfWork(fieldsNameConfig.getFieldTypeOfWork());
+        userService.setStartQuarterMarksColumn(fieldsNameConfig.getStartQuarterMarksColumn());
+        userService.setEndQuarterMarksColumn(fieldsNameConfig.getEndQuarterMarksColumn());
         return userService;
     }
 
     @Bean
-    public StudentService setUpStudentsService(SheetListener sheetListener, BotConfig botConfig) {
+    public StudentService setUpStudentsService() {
         StudentService studentService = new StudentService();
         log.info("User Service is configured");
         return studentService;

@@ -5,11 +5,22 @@ url:
   firstPart: firstPart
   sheetId: sheetId
   apiKey: apiKey
-baseIdList: baseIdList
-settingsList: settingsList
+
+application:
+  fields-name:
+    laboratoryNotebookColumn: C
+    testNotebookColumn: D
+    startMarksColumn: K
+    endMarksColumn: BZ
+    startQuarterMarksColumn: E
+    endQuarterMarksColumn: J
+    dateField: 2
+    fieldTypeOfWork: 3
+  sheet-lists:
+    baseIdList: baseIdList
+    settingsList: settingsList
+    studentsList: Absenteeism
 adminChatId: adminChatId
-studentsList: Absenteeism
-correspondenceOfDates: correspondenceOfDates
 
 spring:
   datasource:
