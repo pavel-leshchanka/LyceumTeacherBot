@@ -1,8 +1,9 @@
 package by.faeton.lyceumteacherbot.repositories;
 
 
-import by.faeton.lyceumteacherbot.config.BotConfig;
+import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserRepository {
 
-    private final BotConfig botConfig;
+    private final SheetListNameConfig sheetListNameConfig;
     private final SheetListener sheetListener;
 
     private final List<User> usersList = new ArrayList<>();
@@ -27,13 +28,13 @@ public class UserRepository {
 
     public Optional<User> findById(String id) {
         Optional<User> returnedUser = usersList.stream()
-                .filter(user -> user.getId().equals(id))
+                .filter(user -> user.getTelegramUserId().equals(id))
                 .findFirst();
         if (returnedUser.isEmpty()) {
             log.info("User " + id + " not found");
             refreshContext();
             returnedUser = usersList.stream()
-                    .filter(user -> user.getId().equals(id))
+                    .filter(user -> user.getTelegramUserId().equals(id))
                     .findFirst();
         }
         return returnedUser;
@@ -45,20 +46,22 @@ public class UserRepository {
 
     public void refreshContext() {
         log.info("Called refresh context method");
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(botConfig.getBaseIdList());
+        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(sheetListNameConfig.baseIdList());
         List<User> list = new ArrayList<>();
         if (values.isPresent()) {
             for (ArrayList<String> value : values.get()) {
-                User user = new User();
-                user.setId(value.get(0));
-                user.setList(value.get(1));
-                user.setField(value.get(2));
+                User user = User.builder()
+                        .telegramUserId(value.get(0))
+                        .listOfGoogleSheet(value.get(1))
+                        .fieldOfSheetWithUser(value.get(2))
+                        .userName(value.get(3))
+                        .userLevel(UserLevel.valueOf(value.get(4)))
+                        .build();
                 list.add(user);
             }
         }
         usersList.clear();
         usersList.addAll(list);
     }
-
 
 }

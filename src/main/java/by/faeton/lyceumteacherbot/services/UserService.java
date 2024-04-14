@@ -1,53 +1,49 @@
 package by.faeton.lyceumteacherbot.services;
 
+import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.model.User;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
+@Component
 public class UserService {
 
-    private String laboratoryNotebookColumn;
-    private String testNotebookColumn;
-    private String startMarksColumn;
-    private String endMarksColumn;
-    private String dateField;
-    private String fieldTypeOfWork;
-    private String startQuarterMarksColumn;
-    private String endQuarterMarksColumn;
+    private final FieldsNameConfig fieldsNameConfig;
 
-    public String getLaboratoryNotebookColumn(User user) {
-        return laboratoryNotebookColumn + user.getField();
+    public String getNameOfCellUserLaboratoryNotebook(User user) {
+        return fieldsNameConfig.laboratoryNotebookColumn() + user.getFieldOfSheetWithUser();
     }
 
-    public String getTestNotebookColumn(User user) {
-        return testNotebookColumn + user.getField();
+    public String getNameOfCellUserTestNotebook(User user) {
+        return fieldsNameConfig.testNotebookColumn() + user.getFieldOfSheetWithUser();
     }
 
-    public String getMarksColumn(User user) {
-        return getColumn(user.getField(), startMarksColumn, endMarksColumn);
+    public String getCellsNameOfMarks(User user) {
+        return getColumn(user.getFieldOfSheetWithUser(), fieldsNameConfig.startMarksColumn(), fieldsNameConfig.endMarksColumn());
     }
 
-    public String getQuarterMarksColumn(User user) {
-        return getColumn(user.getField(), startQuarterMarksColumn, endQuarterMarksColumn);
+    public String getCellsNameOfQuarterMarks(User user) {
+        return getColumn(user.getFieldOfSheetWithUser(), fieldsNameConfig.startQuarterMarksColumn(), fieldsNameConfig.endQuarterMarksColumn());
     }
 
-    public String getDateColumn() {
-        return getColumn(dateField, startMarksColumn, endMarksColumn);
+    public String getCellsNameOfDate() {
+        return getColumn(fieldsNameConfig.dateField(), fieldsNameConfig.startMarksColumn(), fieldsNameConfig.endMarksColumn());
     }
 
-    public String getQuarterNameColumn() {
-        return getColumn(dateField, startQuarterMarksColumn, endQuarterMarksColumn);
+    public String getCellsNameOfQuarterName() {
+        return getColumn(fieldsNameConfig.dateField(), fieldsNameConfig.startQuarterMarksColumn(), fieldsNameConfig.endQuarterMarksColumn());
     }
 
-    public String getTypeOfWorkColumn() {
-        return getColumn(fieldTypeOfWork, startMarksColumn, endMarksColumn);
+    public String getCellsNameOfTypeOfWork() {
+        return getColumn(fieldsNameConfig.fieldTypeOfWork(), fieldsNameConfig.startMarksColumn(), fieldsNameConfig.endMarksColumn());
     }
 
-    public String getTypeOfQuarterColumn() {
-        return getColumn(fieldTypeOfWork, startQuarterMarksColumn, endQuarterMarksColumn);
+    public String getCellsNameOfTypeOfQuarter() {
+        return getColumn(fieldsNameConfig.fieldTypeOfWork(), fieldsNameConfig.startQuarterMarksColumn(), fieldsNameConfig.endQuarterMarksColumn());
     }
 
     private String getColumn(String field, String startColumn, String endColumn) {
