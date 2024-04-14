@@ -1,13 +1,16 @@
 package by.faeton.lyceumteacherbot.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import lombok.*;
+
+
+@Builder
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Student {
 
-    private String number;
-    private String name;
+    private String studentNumber;
+    private String studentName;
 
 }

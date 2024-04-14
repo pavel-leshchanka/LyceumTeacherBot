@@ -1,10 +1,7 @@
 package by.faeton.lyceumteacherbot.controllers;
 
 import by.faeton.lyceumteacherbot.config.BotConfig;
-import by.faeton.lyceumteacherbot.model.DialogAttribute;
-import by.faeton.lyceumteacherbot.model.DialogStarted;
-import by.faeton.lyceumteacherbot.model.Student;
-import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.model.*;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
@@ -22,6 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,44 +61,36 @@ public class BotController extends TelegramLongPollingBot {
 
         if (byId.isPresent()) {
 
-            if (byId.get().getDialogStarted().equals(DialogStarted.ABSENTEEISM)) {
+            if (byId.get().getDialogTypeStarted().equals(DialogTypeStarted.ABSENTEEISM)) {
                 if (byId.get().getStepOfDialog() == 0) {
-                    ArrayList<String> receivedData = byId.get().getReceivedData();
-                    receivedData.add(update.getCallbackQuery().getData());
-                    dialogAttributesService.nextStep(byId.get(), receivedData);
+                    dialogAttributesService.nextStep(byId.get(), update.getCallbackQuery().getData());
                     InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(List.of(0, 1, 2, 3, 4, 5, 6, 7));
                     sendMessage.setReplyMarkup(markupInline);
                     sendMessage.setText("Начало пропуска");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
                 } else if (byId.get().getStepOfDialog() == 1) {
-                    ArrayList<String> receivedData = byId.get().getReceivedData();
-                    receivedData.add(update.getCallbackQuery().getData());
-                    dialogAttributesService.nextStep(byId.get(), receivedData);
+                    dialogAttributesService.nextStep(byId.get(), update.getCallbackQuery().getData());
                     InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(List.of(0, 1, 2, 3, 4, 5, 6, 7));
                     sendMessage.setReplyMarkup(markupInline);
                     sendMessage.setText("Конец пропуска");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
                 } else if (byId.get().getStepOfDialog() == 2) {
-                    ArrayList<String> receivedData = byId.get().getReceivedData();
-                    receivedData.add(update.getCallbackQuery().getData());
-                    dialogAttributesService.nextStep(byId.get(), receivedData);
-                    InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(List.of("б", "с", "о", "бу"));
+                    dialogAttributesService.nextStep(byId.get(), update.getCallbackQuery().getData());
+                    InlineKeyboardMarkup markupInline = getInlineKeyboardMarkup(Arrays.asList(sheetService.getTypeAndValueOfAbsenteeism().keySet().toArray()), Arrays.asList(sheetService.getTypeAndValueOfAbsenteeism().values().toArray()));
                     sendMessage.setReplyMarkup(markupInline);
                     sendMessage.setText("Тип пропуска");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
                 } else if (byId.get().getStepOfDialog() == 3) {
-                    ArrayList<String> receivedData = byId.get().getReceivedData();
-                    receivedData.add(update.getCallbackQuery().getData());
-                    dialogAttributesService.nextStep(byId.get(), receivedData);
+                    dialogAttributesService.nextStep(byId.get(), update.getCallbackQuery().getData());
                     sendMessage.setText("Выполняется запись");
                     sendMessage.setChatId(chatId);
                     sendUserMessage(sendMessage);
-                    boolean b = sheetService.writeAbsenteeism(byId.get());
+                    boolean isWritten = sheetService.writeAbsenteeism(byId.get());
 
-                    if (b) {
+                    if (isWritten) {
                         sendMessage.setText("Запись выполнена");
                         sendUserMessage(sendMessage);
                     } else {
@@ -151,9 +141,13 @@ public class BotController extends TelegramLongPollingBot {
                         sendMessage.setText(NOT_AUTHORIZER);
                     }
                 }
-                case "/labo" -> {
+                case "/absenteeism_text" -> {
                     if (optionalUser.isPresent()) {
-                        sendMessage.setText(sheetService.getA());
+                        if (optionalUser.get().getUserLevel().equals(UserLevel.ADMIN)) {
+                            sendMessage.setText(sheetService.getTextOfAbsenteeism());
+                        } else {
+                            sendMessage.setText(NO_ACCESS);
+                        }
                     } else {
                         sendMessage.setText(NOT_AUTHORIZER);
                     }
@@ -167,33 +161,41 @@ public class BotController extends TelegramLongPollingBot {
                 }
                 case "/help" -> sendMessage.setText(arrivedHelp());
                 case "/send_message" -> {
-                    if (chatId.equals(botConfig.getAdminChatId())) {
-                        sendMessage.setText(WHAT_SENDING);
-                        dialogAttributesService.createDialog(DialogStarted.SEND_MESSAGE, Long.valueOf(chatId));
+                    if (optionalUser.isPresent()) {
+                        if (optionalUser.get().getUserLevel().equals(UserLevel.ADMIN)) {
+                            sendMessage.setText(WHAT_SENDING);
+                            dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, Long.valueOf(chatId));
+                        } else {
+                            sendMessage.setText(NO_ACCESS);
+                        }
                     } else {
-                        sendMessage.setText(NO_ACCESS);
+                        sendMessage.setText(NOT_AUTHORIZER);
                     }
                 }
                 case "/absenteeism" -> {
-                    if (chatId.equals(botConfig.getAdminChatId())) {
-                        List<Student> allStudents = studentsRepository.getAllStudents();
-                        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                        for (Student student : allStudents) {
-                            List<InlineKeyboardButton> row = new ArrayList<>();
-                            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-                            inlineKeyboardButton.setText(student.getName());
-                            inlineKeyboardButton.setCallbackData(student.getNumber());
-                            row.add(inlineKeyboardButton);
-                            rowsInline.add(row);
-                        }
-                        markupInline.setKeyboard(rowsInline);
-                        sendMessage.setReplyMarkup(markupInline);
-                        sendMessage.setText("Список класса");
+                    if (optionalUser.isPresent()) {
+                        if (optionalUser.get().getUserLevel().equals(UserLevel.ADMIN)) {
+                            List<Student> allStudents = studentsRepository.getAllStudents();
+                            InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                            List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                            for (Student student : allStudents) {
+                                List<InlineKeyboardButton> row = new ArrayList<>();
+                                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+                                inlineKeyboardButton.setText(student.getStudentName());
+                                inlineKeyboardButton.setCallbackData(student.getStudentNumber());
+                                row.add(inlineKeyboardButton);
+                                rowsInline.add(row);
+                            }
+                            markupInline.setKeyboard(rowsInline);
+                            sendMessage.setReplyMarkup(markupInline);
+                            sendMessage.setText("Список класса");
 
-                        dialogAttributesService.createDialog(DialogStarted.ABSENTEEISM, Long.valueOf(chatId));
+                            dialogAttributesService.createDialog(DialogTypeStarted.ABSENTEEISM, Long.valueOf(chatId));
+                        } else {
+                            sendMessage.setText(NO_ACCESS);
+                        }
                     } else {
-                        sendMessage.setText(NO_ACCESS);
+                        sendMessage.setText(NOT_AUTHORIZER);
                     }
                 }
                 default -> {
@@ -207,10 +209,10 @@ public class BotController extends TelegramLongPollingBot {
         }
 
         if (byId.isPresent()) {
-            if (byId.get().getDialogStarted().equals(DialogStarted.SEND_MESSAGE)) {
+            if (byId.get().getDialogTypeStarted().equals(DialogTypeStarted.SEND_MESSAGE)) {
                 sendMessage.setText(update.getMessage().getText());
                 for (User user : userRepository.getAllUsers()) {
-                    String id = user.getId();
+                    String id = user.getTelegramUserId();
                     if (id != null && !id.equals("")) {
                         sendMessage.setChatId(id);
                         sendUserMessage(sendMessage);
@@ -267,11 +269,11 @@ public class BotController extends TelegramLongPollingBot {
     }
 
     public String getBotUsername() {
-        return botConfig.getBotUsername();
+        return botConfig.botName();
     }
 
     public String getBotToken() {
-        return botConfig.getBotToken();
+        return botConfig.botToken();
     }
 
     public void sendUserMessage(SendMessage sendMessage) {
@@ -283,14 +285,18 @@ public class BotController extends TelegramLongPollingBot {
         }
     }
 
-    private InlineKeyboardMarkup getInlineKeyboardMarkup(List list) {
+    private InlineKeyboardMarkup getInlineKeyboardMarkup(List callbackData) {
+        return getInlineKeyboardMarkup(callbackData, callbackData);
+    }
+
+    private InlineKeyboardMarkup getInlineKeyboardMarkup(List callbackData, List labels) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < callbackData.size(); i++) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-            inlineKeyboardButton.setText(String.valueOf(list.get(i)));
-            inlineKeyboardButton.setCallbackData(String.valueOf(list.get(i)));
+            inlineKeyboardButton.setText(String.valueOf(labels.get(i)));
+            inlineKeyboardButton.setCallbackData(String.valueOf(callbackData.get(i)));
             row.add(inlineKeyboardButton);
             rowsInline.add(row);
         }

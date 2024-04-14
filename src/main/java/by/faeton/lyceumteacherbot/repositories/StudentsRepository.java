@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.repositories;
 
 
-import by.faeton.lyceumteacherbot.config.BotConfig;
+import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
@@ -19,8 +19,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class StudentsRepository {
 
-    private final BotConfig botConfig;
     private final SheetListNameConfig sheetListNameConfig;
+    private final FieldsNameConfig fieldsNameConfig;
     private final SheetListener sheetListener;
 
     private final List<Student> studentsList = new ArrayList<>();
@@ -29,13 +29,13 @@ public class StudentsRepository {
 
     public Optional<Student> findByNumber(String number) {
         Optional<Student> returnedStudent = studentsList.stream()
-                .filter(student -> student.getNumber().equals(number))
+                .filter(student -> student.getStudentNumber().equals(number))
                 .findFirst();
         if (returnedStudent.isEmpty()) {
             log.info("Student " + number + " not found");
             refreshContext();
             returnedStudent = studentsList.stream()
-                    .filter(student -> student.getNumber().equals(number))
+                    .filter(student -> student.getStudentNumber().equals(number))
                     .findFirst();
         }
         return returnedStudent;
@@ -48,15 +48,17 @@ public class StudentsRepository {
 
     public void refreshContext() {
         log.info("Called refresh context method");
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(sheetListNameConfig.studentsList(), "A4:B33");
+        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(),
+                fieldsNameConfig.studentsFields());
         List<Student> list = new ArrayList<>();
         if (values.isPresent()) {
             for (ArrayList<String> value : values.get()) {
-                Student students = new Student();
                 if (value.size() > 1) {
-                    students.setNumber(value.get(0));
-                    students.setName(value.get(1));
-                    list.add(students);
+                    Student student = Student.builder()
+                            .studentNumber(value.get(0))
+                            .studentName(value.get(1))
+                            .build();
+                    list.add(student);
                 }
             }
         }

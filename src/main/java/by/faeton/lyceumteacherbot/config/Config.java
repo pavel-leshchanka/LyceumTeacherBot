@@ -1,7 +1,5 @@
 package by.faeton.lyceumteacherbot.config;
 
-import by.faeton.lyceumteacherbot.services.StudentService;
-import by.faeton.lyceumteacherbot.services.UserService;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -28,27 +26,6 @@ import java.util.List;
 public class Config {
     private static final String APPLICATION_NAME = "LyceumTeacher";
     private static final Logger log = LoggerFactory.getLogger(Config.class);
-
-    @Bean
-    public UserService setUpUserService(FieldsNameConfig fieldsNameConfig) {
-        UserService userService = new UserService();
-        userService.setLaboratoryNotebookColumn(fieldsNameConfig.getLaboratoryNotebookColumn());
-        userService.setTestNotebookColumn(fieldsNameConfig.getTestNotebookColumn());
-        userService.setStartMarksColumn(fieldsNameConfig.getStartMarksColumn());
-        userService.setEndMarksColumn(fieldsNameConfig.getEndMarksColumn());
-        userService.setDateField(fieldsNameConfig.getDateField());
-        userService.setFieldTypeOfWork(fieldsNameConfig.getFieldTypeOfWork());
-        userService.setStartQuarterMarksColumn(fieldsNameConfig.getStartQuarterMarksColumn());
-        userService.setEndQuarterMarksColumn(fieldsNameConfig.getEndQuarterMarksColumn());
-        return userService;
-    }
-
-    @Bean
-    public StudentService setUpStudentsService() {
-        StudentService studentService = new StudentService();
-        log.info("User Service is configured");
-        return studentService;
-    }
 
     @Bean
     public Credential authorize() throws IOException, GeneralSecurityException {

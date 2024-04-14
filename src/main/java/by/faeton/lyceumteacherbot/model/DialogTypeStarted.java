@@ -1,6 +1,6 @@
 package by.faeton.lyceumteacherbot.model;
 
-public enum DialogStarted {
+public enum DialogTypeStarted {
 
     REGISTER,
     ABSENTEEISM,

@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.utils;
 
 
-import by.faeton.lyceumteacherbot.config.BotConfig;
+import by.faeton.lyceumteacherbot.config.SheetConfig;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SheetListener {
 
-    private final BotConfig botConfig;
+    private final SheetConfig sheetConfig;
     private final Sheets sheetsService;
 
     private static final Logger log = LoggerFactory.getLogger(SheetListener.class);
@@ -33,7 +33,7 @@ public class SheetListener {
         BatchGetValuesResponse readResult = null;
         try {
             readResult = sheetsService.spreadsheets().values()
-                    .batchGet(botConfig.getSheetId())
+                    .batchGet(sheetConfig.sheetId())
                     .setRanges(ranges)
                     .execute();
         } catch (IOException e) {
@@ -67,11 +67,12 @@ public class SheetListener {
                 .setValues(content);
         try {
             String s = sheetListName + (startField.equals("") ? "" : "!") + startField;
-            UpdateValuesResponse result = sheetsService.spreadsheets().values()//todo what is result?
-                    .update(botConfig.getSheetId(), s, body)
+            UpdateValuesResponse result = sheetsService.spreadsheets().values()
+                    .update(sheetConfig.sheetId(), s, body)
                     .setValueInputOption("RAW")
                     .execute();
-        } catch (IOException e) {//todo
+        } catch (IOException e) {
+            log.warn(e + "data is not writen");
         }
     }
 

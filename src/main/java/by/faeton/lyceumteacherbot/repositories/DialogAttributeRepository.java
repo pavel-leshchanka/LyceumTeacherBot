@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DialogAttributeRepository  extends JpaRepository<DialogAttribute, Long> {
-    void deleteAllById(Long chatId);
 
 }

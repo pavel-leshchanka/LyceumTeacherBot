@@ -1,12 +1,10 @@
 bot:
-  name: name
-  token: token
+  botName: name
+  botToken: token
 url:
-  firstPart: firstPart
   sheetId: sheetId
-  apiKey: apiKey
 
-application:
+sheet-config:
   fields-name:
     laboratoryNotebookColumn: C
     testNotebookColumn: D
@@ -16,11 +14,12 @@ application:
     endQuarterMarksColumn: J
     dateField: 2
     fieldTypeOfWork: 3
+    studentsFields: A4:B33
+    typeOfAbsenteeism: A35:B38
+    numberOfFirstColumnWithAbsenteeism: 3
   sheet-lists:
     baseIdList: baseIdList
-    settingsList: settingsList
-    studentsList: Absenteeism
-adminChatId: adminChatId
+    absenteeismList: Absenteeism
 
 spring:
   datasource:
