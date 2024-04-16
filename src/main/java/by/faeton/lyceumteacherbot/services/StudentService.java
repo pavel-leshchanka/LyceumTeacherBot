@@ -22,6 +22,10 @@ public class StudentService {
 
         while (number > NUMBER_OF_LETTERS) {
             int letterNumber = number % NUMBER_OF_LETTERS;
+            if (letterNumber == 0) {
+                letterNumber = 26;
+                number -= 1;
+            }
             char letter = (char) (letterNumber + SHIFT_TO_LETTER_A);
             startCell = letter + startCell;
             number /= NUMBER_OF_LETTERS;

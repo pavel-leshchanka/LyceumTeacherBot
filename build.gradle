@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'by.faeton'
-version = '0.60-SNAPSHOT'
+version = '0.61-SNAPSHOT'
 
 java {
 	toolchain {
