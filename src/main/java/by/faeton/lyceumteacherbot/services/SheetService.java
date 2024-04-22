@@ -7,6 +7,7 @@ import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,55 +27,48 @@ public class SheetService {
     private final StudentsRepository studentsRepository;
     private final SheetListNameConfig sheetListNameConfig;
     private final FieldsNameConfig fieldsNameConfig;
+    @Getter
     private final HashMap<String, String> typeAndValueOfAbsenteeism;
 
-    public HashMap<String, String> getTypeAndValueOfAbsenteeism() {
-        return typeAndValueOfAbsenteeism;
-    }
-
     public String getStudentMarks(User user) {
-        Optional<ArrayList<ArrayList<String>>> sheetDateLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfDate());
-        Optional<ArrayList<ArrayList<String>>> sheetTypeLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfTypeOfWork());
-        Optional<ArrayList<ArrayList<String>>> sheetMarksLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfMarks(user));
-        String marks = linesToString(sheetDateLine, sheetTypeLine, sheetMarksLine);
-        return marks;
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfDate());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfTypeOfWork());
+        Optional<List<List<String>>> sheetMarksLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfMarks(user));
+        return linesToString(sheetDateLine, sheetTypeLine, sheetMarksLine);
     }
 
     public String getStudentQuarterMarks(User user) {
-        Optional<ArrayList<ArrayList<String>>> sheetDateLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfQuarterName());
-        Optional<ArrayList<ArrayList<String>>> sheetTypeLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfTypeOfQuarter());
-        Optional<ArrayList<ArrayList<String>>> sheetQuarterLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfQuarterMarks(user));
-        String marks = linesToString(sheetDateLine, sheetTypeLine, sheetQuarterLine);
-        return marks;
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfQuarterName());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfTypeOfQuarter());
+        Optional<List<List<String>>> sheetQuarterLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfQuarterMarks(user));
+        return linesToString(sheetDateLine, sheetTypeLine, sheetQuarterLine);
     }
 
     public String getStudentLaboratoryNotebook(User user) {
         String field = userService.getNameOfCellUserLaboratoryNotebook(user);
-        String cell = sheetListener.getCell(user.getListOfGoogleSheet(), field);
-        return cell;
+        return sheetListener.getCell(user.getListOfGoogleSheet(), field);
     }
 
     public String getStudentTestNotebook(User user) {
         String field = userService.getNameOfCellUserTestNotebook(user);
-        String cell = sheetListener.getCell(user.getListOfGoogleSheet(), field);
-        return cell;
+        return sheetListener.getCell(user.getListOfGoogleSheet(), field);
     }
 
     public String getTextOfAbsenteeism() {
         List<Student> allStudents = studentsRepository.getAllStudents();
-        Integer columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2;
+        int columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2;
         Student student = new Student();
         student.setStudentNumber(String.valueOf(1));
         String startCell = studentService.getNameStartCellOfAbsenteeism(student, columnNumber);
         student.setStudentNumber(String.valueOf(allStudents.size()));
         String endCell = studentService.getNameStartCellOfAbsenteeism(student, columnNumber + 7);
-        Optional<ArrayList<ArrayList<String>>> sheetDateLine = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(), startCell + ":" + endCell);
-        ArrayList<ArrayList<String>> arrayLists = sheetDateLine.get();
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(), startCell + ":" + endCell);
+        List<List<String>> arrayLists = sheetDateLine.get();
         String s = "10л";
         for (int i = 0; i < arrayLists.size(); i++) {
             if (!arrayLists.get(i).isEmpty()) {
                 s += "\n" + allStudents.get(i).getStudentName() + " ";
-                String s1 = arrayLists.get(i).get(0);
+                String s1 = arrayLists.get(i).getFirst();
                 int start = 0;
                 int end = 0;
                 for (int j = 1; j < arrayLists.get(i).size(); j++) {
@@ -95,34 +89,32 @@ public class SheetService {
 
     private String generateTextAbsenteeismLine(Integer start, Integer end, String type) {
         String ret = "";
-        if (!type.equals("")) {
+        if (!type.isEmpty()) {
             if (start.equals(end)) {
                 ret += start + " урок " + typeAndValueOfAbsenteeism.get(type) + ". ";
             }
             if (!start.equals(end)) {
                 ret += start + "-" + end + " уроки " + typeAndValueOfAbsenteeism.get(type) + ". ";
             }
-        } else {
-            ret = "";
         }
         return ret;
     }
 
-    public String linesToString(Optional<ArrayList<ArrayList<String>>>... values) {
-        ArrayList<ArrayList<String>> returnedList = new ArrayList<>();
-        for (Optional<ArrayList<ArrayList<String>>> firstValue : values) {
-            firstValue.ifPresent(arrayLists -> returnedList.add(arrayLists.get(0)));
+    public String linesToString(Optional<List<List<String>>>... values) {
+        List<List<String>> returnedList = new ArrayList<>();
+        for (Optional<List<List<String>>> firstValue : values) {
+            firstValue.ifPresent(arrayLists -> returnedList.add(arrayLists.getFirst()));
         }
         String returnedText = "";
         if (returnedList.size() > 1) {
             int lastNumberListOfValues = returnedList.size() - 1;
-            ArrayList<String> lastList = returnedList.get(lastNumberListOfValues);
+            List<String> lastList = returnedList.get(lastNumberListOfValues);
             int countElementsInLastListOfValues = lastList.size();
             for (int i = 0; i < countElementsInLastListOfValues; i++) {
-                if (lastList.get(i) != null && !lastList.get(i).equals("")) {
-                    for (ArrayList<String> strings : returnedList) {
+                if (lastList.get(i) != null && !lastList.get(i).isEmpty()) {
+                    for (List<String> strings : returnedList) {
                         if (i < strings.size()) {
-                            returnedText = returnedText + strings.get(i) + " ";
+                            returnedText += strings.get(i) + " ";
                         }
                     }
                     returnedText += '\n';
@@ -135,14 +127,14 @@ public class SheetService {
     }
 
     public boolean writeAbsenteeism(DialogAttribute dialogAttribute) {
-        ArrayList<String> receivedData = dialogAttribute.getReceivedData();
+        List<String> receivedData = dialogAttribute.getReceivedData();
         Optional<Student> optionalStudent = studentsRepository.findByNumber(receivedData.get(0));
         if (optionalStudent.isPresent() && receivedData.size() == 4) {
             Student student = optionalStudent.get();
             int startOfAbsenteeism = Integer.parseInt(receivedData.get(1));
             int endOfAbsenteeism = Integer.parseInt(receivedData.get(2));
             String typeOfAbsenteeism = receivedData.get(3);
-            List list = new ArrayList<>();
+            List<Object> list = new ArrayList<>();
             if (endOfAbsenteeism >= startOfAbsenteeism) {
                 for (int i = 0; i <= startOfAbsenteeism; i++) {
                     list.add(i, null);
@@ -151,7 +143,7 @@ public class SheetService {
                     list.add(i, typeOfAbsenteeism);
                 }
             }
-            List<List<Object>> arrayLists = Arrays.asList(list);
+            List<List<Object>> arrayLists = List.of(list);
             Integer columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2 + startOfAbsenteeism;
             String startCell = studentService.getNameStartCellOfAbsenteeism(student, columnNumber);
             sheetListener.writeSheet(sheetListNameConfig.absenteeismList(), startCell, arrayLists);
@@ -162,9 +154,9 @@ public class SheetService {
 
     @PostConstruct
     private void setUp() {
-        Optional<ArrayList<ArrayList<String>>> absenteeism = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(), fieldsNameConfig.typeOfAbsenteeism());
-        ArrayList<ArrayList<String>> arrayLists = absenteeism.get();
-        for (ArrayList<String> arrayList : arrayLists) {
+        Optional<List<List<String>>> absenteeism = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(), fieldsNameConfig.typeOfAbsenteeism());
+        List<List<String>> arrayLists = absenteeism.get();
+        for (List<String> arrayList : arrayLists) {
             typeAndValueOfAbsenteeism.put(arrayList.get(0), arrayList.get(1));
         }
     }

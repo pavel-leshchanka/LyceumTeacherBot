@@ -21,5 +21,11 @@ public class DefaultMessages {
     public static final String ANOTHER_MESSAGES = "Для начала работы выполни одну из возможных команд";
     public static final String WHAT_SENDING = "Что отправляем?";
     public static final String NO_ACCESS = "Нет доступа";
-
+    public static final String START_ABSENTEEISM = "Начало пропуска";
+    public static final String END_ABSENTEEISM = "Конец пропуска";
+    public static final String TYPE_OF_ABSENTEEISM = "Тип пропуска";
+    public static final String WRITING_IN_PROGRESS = "Выполняется запись";
+    public static final String WRITING_IS_COMPLETED = "Запись выполнена";
+    public static final String WRITING_IS_NOT_COMPLETED = "Запись не выполнена. Попробуйте еще раз";
+    public static final String CLASS_STUDENTS = "Список класса";
 }

@@ -20,6 +20,9 @@ sheet-config:
   sheet-lists:
     baseIdList: baseIdList
     absenteeismList: Absenteeism
+school:
+  firstLesson: 0
+  lastLesson: 7
 
 spring:
   datasource:

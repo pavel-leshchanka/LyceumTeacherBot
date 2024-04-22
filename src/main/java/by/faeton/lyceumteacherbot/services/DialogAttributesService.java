@@ -15,18 +15,16 @@ public class DialogAttributesService {
     private final DialogAttributeRepository dialogAttributeRepository;
 
     public Optional<DialogAttribute> find(Long chatId) {
-        Optional<DialogAttribute> byId = dialogAttributeRepository.findById(chatId);
-        return byId;
+        return dialogAttributeRepository.findById(chatId);
     }
 
     public void createDialog(DialogTypeStarted dialogTypeStarted, Long chatId) {
-        DialogAttribute dialogAttribute = DialogAttribute.builder()
+        dialogAttributeRepository.save(DialogAttribute.builder()
                 .id(chatId)
                 .dialogTypeStarted(dialogTypeStarted)
                 .stepOfDialog(0)
                 .receivedData(new ArrayList<>())
-                .build();
-        dialogAttributeRepository.save(dialogAttribute);
+                .build());
     }
 
     public void nextStep(DialogAttribute dialogAttribute, String receivedData) {

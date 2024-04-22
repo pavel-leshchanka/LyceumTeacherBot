@@ -46,10 +46,10 @@ public class UserRepository {
 
     public void refreshContext() {
         log.info("Called refresh context method");
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(sheetListNameConfig.baseIdList());
+        Optional<List<List<String>>> values = sheetListener.getSheetList(sheetListNameConfig.baseIdList());
         List<User> list = new ArrayList<>();
         if (values.isPresent()) {
-            for (ArrayList<String> value : values.get()) {
+            for (List<String> value : values.get()) {
                 User user = User.builder()
                         .telegramUserId(value.get(0))
                         .listOfGoogleSheet(value.get(1))
@@ -63,5 +63,4 @@ public class UserRepository {
         usersList.clear();
         usersList.addAll(list);
     }
-
 }

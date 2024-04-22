@@ -3,13 +3,10 @@ package by.faeton.lyceumteacherbot.services;
 import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.model.User;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-
-@Data
+@Service
 @AllArgsConstructor
-@Component
 public class UserService {
 
     private final FieldsNameConfig fieldsNameConfig;

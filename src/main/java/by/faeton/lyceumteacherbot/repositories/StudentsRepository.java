@@ -48,11 +48,11 @@ public class StudentsRepository {
 
     public void refreshContext() {
         log.info("Called refresh context method");
-        Optional<ArrayList<ArrayList<String>>> values = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(),
+        Optional<List<List<String>>> values = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(),
                 fieldsNameConfig.studentsFields());
         List<Student> list = new ArrayList<>();
         if (values.isPresent()) {
-            for (ArrayList<String> value : values.get()) {
+            for (List<String> value : values.get()) {
                 if (value.size() > 1) {
                     Student student = Student.builder()
                             .studentNumber(value.get(0))
@@ -65,6 +65,4 @@ public class StudentsRepository {
         studentsList.clear();
         studentsList.addAll(list);
     }
-
-
 }

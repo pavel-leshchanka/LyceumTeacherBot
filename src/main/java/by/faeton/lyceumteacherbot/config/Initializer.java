@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.config;
 
 
-import by.faeton.lyceumteacherbot.controllers.BotController;
+import by.faeton.lyceumteacherbot.controllers.MessageBroker;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +19,13 @@ public class Initializer {
 
     private static final Logger log = LoggerFactory.getLogger(Initializer.class);
 
-    private final BotController botController;
+    private final MessageBroker messageBroker;
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() {
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot((LongPollingBot) botController);
+            telegramBotsApi.registerBot((LongPollingBot) messageBroker);
             log.debug("Telegram Bot Registered");
         } catch (TelegramApiException e) {
             log.error("Telegram Bot Not Registered" + e);
