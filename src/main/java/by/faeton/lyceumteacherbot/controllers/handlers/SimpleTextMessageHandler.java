@@ -23,7 +23,7 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class TextMessageHandler implements MessageHandler {
+public class SimpleTextMessageHandler implements MessageHandler {
 
     private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
@@ -109,7 +109,7 @@ public class TextMessageHandler implements MessageHandler {
                                     .chatId(chatId)
                                     .text(WHAT_SENDING)
                                     .build());
-                            dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, Long.valueOf(chatId));
+                            dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, chatId);
                         } else {
                             sendMessages.add(SendMessage.builder()
                                     .chatId(chatId)
@@ -129,7 +129,7 @@ public class TextMessageHandler implements MessageHandler {
                                     .text(CLASS_STUDENTS)
                                     .replyMarkup(getInlineKeyboardMarkup(studentsRepository.getAllStudents()))
                                     .build());
-                            dialogAttributesService.createDialog(DialogTypeStarted.ABSENTEEISM, Long.valueOf(chatId));
+                            dialogAttributesService.createDialog(DialogTypeStarted.ABSENTEEISM, chatId);
                         } else {
                             sendMessages.add(SendMessage.builder()
                                     .chatId(chatId)

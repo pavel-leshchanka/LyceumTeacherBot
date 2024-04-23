@@ -1,6 +1,5 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
-import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
@@ -12,7 +11,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,8 +23,10 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
         if (update.hasMessage()) {
-            Optional<DialogAttribute> byId = dialogAttributesService.find(update.getMessage().getChatId());
-            return update.getMessage().hasText() && byId.isPresent();
+            return dialogAttributesService
+                    .find(update.getMessage().getChatId())
+                    .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.SEND_MESSAGE))
+                    .orElse(false);
         }
         return false;
     }
@@ -35,16 +35,14 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
     public List<SendMessage> execute(Update update) {
         List<SendMessage> sendMessages = new ArrayList<>();
         Long chatId = update.getMessage().getChatId();
-        dialogAttributesService.find(chatId).ifPresent(us -> {
-            if (us.getDialogTypeStarted().equals(DialogTypeStarted.SEND_MESSAGE)) {
-                userRepository.getAllUsers().forEach(user -> {
-                    sendMessages.add(SendMessage.builder()
-                            .chatId(user.getTelegramUserId())
-                            .text(update.getMessage().getText())
-                            .build());
-                    dialogAttributesService.finalStep(chatId);
-                });
-            }
+        dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
+            userRepository.getAllUsers().forEach(user -> {
+                sendMessages.add(SendMessage.builder()
+                        .chatId(user.getTelegramUserId())
+                        .text(update.getMessage().getText())
+                        .build());
+                dialogAttributesService.finalStep(chatId);
+            });
         });
         return sendMessages;
     }
