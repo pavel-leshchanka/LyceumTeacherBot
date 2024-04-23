@@ -16,5 +16,4 @@ public record FieldsNameConfig(
         String studentsFields,
         String typeOfAbsenteeism,
         Integer numberOfFirstColumnWithAbsenteeism) {
-
 }

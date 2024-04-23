@@ -10,8 +10,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.MemoryDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,26 +18,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Configuration
 public class Config {
     private static final String APPLICATION_NAME = "LyceumTeacher";
-    private static final Logger log = LoggerFactory.getLogger(Config.class);
 
     @Bean
     public Credential authorize() throws IOException, GeneralSecurityException {
         InputStream in = Config.class.getResourceAsStream("/google-sheets-client-secret.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JacksonFactory.getDefaultInstance(), new InputStreamReader(in));
-        List<String> scopes = Arrays.asList(SheetsScopes.SPREADSHEETS);
+        List<String> scopes = List.of(SheetsScopes.SPREADSHEETS);
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
                 clientSecrets,
                 scopes).setDataStoreFactory(new MemoryDataStoreFactory())
                 .setAccessType("offline").build();
-        Credential credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-        return credential;
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
     @Bean
@@ -50,5 +47,4 @@ public class Config {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
-
 }

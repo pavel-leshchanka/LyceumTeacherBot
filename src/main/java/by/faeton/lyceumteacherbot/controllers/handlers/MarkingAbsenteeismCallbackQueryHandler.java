@@ -22,7 +22,7 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CallbackQueryHandler implements MessageHandler {
+public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
 
     private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
@@ -30,7 +30,15 @@ public class CallbackQueryHandler implements MessageHandler {
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
-        return update.hasCallbackQuery();
+        if (update.hasCallbackQuery()) {
+            return dialogAttributesService
+                    .find(update.getCallbackQuery()
+                            .getMessage()
+                            .getChatId())
+                    .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.ABSENTEEISM))
+                    .orElse(false);
+        }
+        return false;
     }
 
     @Override
@@ -38,33 +46,26 @@ public class CallbackQueryHandler implements MessageHandler {
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         List<SendMessage> sendMessages = new ArrayList<>();
         dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
-            if (dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.ABSENTEEISM)) {
-                if (dialogAttribute.getStepOfDialog() == 0) {
-                    SendMessage sendMessage = getInlineKeyboardMarkup(update,
-                            dialogAttribute,
-                            START_ABSENTEEISM,
-                            getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson()));
-                    sendMessages.add(sendMessage);
-                } else if (dialogAttribute.getStepOfDialog() == 1) {
-                    SendMessage sendMessage = getInlineKeyboardMarkup(update,
-                            dialogAttribute,
-                            END_ABSENTEEISM,
-                            getClassesNumbers(Integer.parseInt(update.getCallbackQuery().getData()), schoolConfig.lastLesson()));
-                    sendMessages.add(sendMessage);
-                } else if (dialogAttribute.getStepOfDialog() == 2) {
-                    SendMessage sendMessage = getInlineKeyboardMarkup(update,
-                            dialogAttribute,
-                            TYPE_OF_ABSENTEEISM,
-                            sheetService.getTypeAndValueOfAbsenteeism());
-                    sendMessages.add(sendMessage);
-                } else if (dialogAttribute.getStepOfDialog() == 3) {
+            switch (dialogAttribute.getStepOfDialog()) {
+                case 0 -> sendMessages.add(getInlineKeyboardMarkup(update,
+                        dialogAttribute,
+                        START_ABSENTEEISM,
+                        getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson())));
+                case 1 -> sendMessages.add(getInlineKeyboardMarkup(update,
+                        dialogAttribute,
+                        END_ABSENTEEISM,
+                        getClassesNumbers(Integer.parseInt(update.getCallbackQuery().getData()), schoolConfig.lastLesson())));
+                case 2 -> sendMessages.add(getInlineKeyboardMarkup(update,
+                        dialogAttribute,
+                        TYPE_OF_ABSENTEEISM,
+                        sheetService.getTypeAndValueOfAbsenteeism()));
+                case 3 -> {
                     dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                     sendMessages.add(SendMessage.builder()
                             .chatId(chatId)
                             .text(WRITING_IN_PROGRESS)
                             .build());
-                    boolean isWritten = sheetService.writeAbsenteeism(dialogAttribute);
-                    if (isWritten) {
+                    if (sheetService.writeAbsenteeism(dialogAttribute)) {
                         sendMessages.add(SendMessage.builder()
                                 .chatId(chatId)
                                 .text(WRITING_IS_COMPLETED)
