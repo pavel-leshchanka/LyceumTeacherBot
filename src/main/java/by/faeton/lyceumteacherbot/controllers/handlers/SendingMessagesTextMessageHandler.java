@@ -34,15 +34,15 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
     @Override
     public List<SendMessage> execute(Update update) {
         List<SendMessage> sendMessages = new ArrayList<>();
-        String chatId = update.getMessage().getChatId().toString();
-        dialogAttributesService.find(Long.valueOf(chatId)).ifPresent(us -> {
+        Long chatId = update.getMessage().getChatId();
+        dialogAttributesService.find(chatId).ifPresent(us -> {
             if (us.getDialogTypeStarted().equals(DialogTypeStarted.SEND_MESSAGE)) {
                 userRepository.getAllUsers().forEach(user -> {
                     sendMessages.add(SendMessage.builder()
                             .chatId(user.getTelegramUserId())
                             .text(update.getMessage().getText())
                             .build());
-                    dialogAttributesService.finalStep(Long.valueOf(chatId));
+                    dialogAttributesService.finalStep(chatId);
                 });
             }
         });

@@ -43,7 +43,7 @@ public class TextMessageHandler implements MessageHandler {
     public List<SendMessage> execute(Update update) {
         List<SendMessage> sendMessages = new ArrayList<>();
         Message message = update.getMessage();
-        String chatId = message.getChatId().toString();
+        Long chatId = message.getChatId();
         Optional<User> optionalUser = userRepository.findById(chatId);
         switch (message.getText()) {
             case "/start" -> sendMessages.add(SendMessage.builder()

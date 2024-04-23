@@ -26,7 +26,7 @@ public class UserRepository {
 
     private static final Logger log = LoggerFactory.getLogger(UserRepository.class);
 
-    public Optional<User> findById(String id) {
+    public Optional<User> findById(Long id) {
         Optional<User> returnedUser = usersList.stream()
                 .filter(user -> user.getTelegramUserId().equals(id))
                 .findFirst();
@@ -50,14 +50,16 @@ public class UserRepository {
         List<User> list = new ArrayList<>();
         if (values.isPresent()) {
             for (List<String> value : values.get()) {
-                User user = User.builder()
-                        .telegramUserId(value.get(0))
-                        .listOfGoogleSheet(value.get(1))
-                        .fieldOfSheetWithUser(value.get(2))
-                        .userName(value.get(3))
-                        .userLevel(UserLevel.valueOf(value.get(4)))
-                        .build();
-                list.add(user);
+                try {
+                    list.add(User.builder()
+                            .telegramUserId(Long.valueOf(value.get(0)))
+                            .listOfGoogleSheet(value.get(1))
+                            .fieldOfSheetWithUser(value.get(2))
+                            .userName(value.get(3))
+                            .userLevel(UserLevel.valueOf(value.get(4)))
+                            .build());
+                } catch (IllegalArgumentException ignored) {
+                }
             }
         }
         usersList.clear();

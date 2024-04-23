@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class User {
 
-    private String telegramUserId;
+    private Long telegramUserId;
     private String listOfGoogleSheet;
     private String fieldOfSheetWithUser;
     private String userName;
