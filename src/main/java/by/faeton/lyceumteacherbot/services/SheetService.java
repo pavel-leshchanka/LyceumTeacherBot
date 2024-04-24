@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
 
@@ -63,28 +66,29 @@ public class SheetService {
         student.setStudentNumber(String.valueOf(allStudents.size()));
         String endCell = studentService.getNameStartCellOfAbsenteeism(student, columnNumber + 7);
         Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(sheetListNameConfig.absenteeismList(), startCell + ":" + endCell);
-        List<List<String>> arrayLists = sheetDateLine.get();
-        String s = "10л";
-        for (int i = 0; i < arrayLists.size(); i++) {
-            if (!arrayLists.get(i).isEmpty()) {
-                s += "\n" + allStudents.get(i).getStudentName() + " ";
-                String s1 = arrayLists.get(i).getFirst();
-                int start = 0;
-                int end = 0;
-                for (int j = 1; j < arrayLists.get(i).size(); j++) {
-                    if (!arrayLists.get(i).get(j).equals(s1)) {
-                        end = j - 1;
-                        s += generateTextAbsenteeismLine(start, end, s1);
-                        s1 = arrayLists.get(i).get(j);
-                        start = j;
+        return sheetDateLine.map(arrayLists -> {
+            String s = "10л";
+            for (int i = 0; i < arrayLists.size(); i++) {
+                if (!arrayLists.get(i).isEmpty()) {
+                    s += "\n" + allStudents.get(i).getStudentName() + " ";
+                    String s1 = arrayLists.get(i).getFirst();
+                    int start = 0;
+                    int end = 0;
+                    for (int j = 1; j < arrayLists.get(i).size(); j++) {
+                        if (!arrayLists.get(i).get(j).equals(s1)) {
+                            end = j - 1;
+                            s += generateTextAbsenteeismLine(start, end, s1);
+                            s1 = arrayLists.get(i).get(j);
+                            start = j;
+                        }
+                    }
+                    if (end != arrayLists.get(i).size()) {
+                        s += generateTextAbsenteeismLine(start, arrayLists.get(i).size() - 1, s1);
                     }
                 }
-                if (end != arrayLists.get(i).size()) {
-                    s += generateTextAbsenteeismLine(start, arrayLists.get(i).size() - 1, s1);
-                }
             }
-        }
-        return s;
+            return s;
+        }).orElse("Не найдено");
     }
 
     private String generateTextAbsenteeismLine(Integer start, Integer end, String type) {
