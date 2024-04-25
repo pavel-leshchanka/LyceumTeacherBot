@@ -3,15 +3,19 @@ package by.faeton.lyceumteacherbot.controllers.handlers;
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
 import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
+import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.SheetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +31,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
     private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
     private final SchoolConfig schoolConfig;
+    private final StudentsRepository studentsRepository;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -42,24 +47,50 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
     }
 
     @Override
-    public List<SendMessage> execute(Update update) {
+    public List<BotApiMethod> execute(Update update) {
         long chatId = update.getCallbackQuery().getMessage().getChatId();
-        List<SendMessage> sendMessages = new ArrayList<>();
+
+        List<BotApiMethod> sendMessages = new ArrayList<>();
         dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
             switch (dialogAttribute.getStepOfDialog()) {
-                case 0 -> sendMessages.add(getInlineKeyboardMarkup(update,
+                case 0 -> {
+                    sendMessages.add(EditMessageText.builder()
+                            .chatId(chatId)
+                            .text(studentsRepository.findByNumber(update.getCallbackQuery().getData()).get().getStudentName())
+                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                            .build());
+                    sendMessages.add(getInlineKeyboardMarkup(update,
                         dialogAttribute,
                         START_ABSENTEEISM,
-                        getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson())));
-                case 1 -> sendMessages.add(getInlineKeyboardMarkup(update,
-                        dialogAttribute,
-                        END_ABSENTEEISM,
-                        getClassesNumbers(Integer.parseInt(update.getCallbackQuery().getData()), schoolConfig.lastLesson())));
-                case 2 -> sendMessages.add(getInlineKeyboardMarkup(update,
-                        dialogAttribute,
-                        TYPE_OF_ABSENTEEISM,
-                        sheetService.getTypeAndValueOfAbsenteeism()));
+                        getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson())));}
+                case 1 -> {
+                    sendMessages.add(EditMessageText.builder()
+                            .chatId(chatId)
+                            .text("Начало пропуска: " + update.getCallbackQuery().getData())
+                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                            .build());
+                    sendMessages.add(getInlineKeyboardMarkup(update,
+                            dialogAttribute,
+                            END_ABSENTEEISM,
+                            getClassesNumbers(Integer.parseInt(update.getCallbackQuery().getData()), schoolConfig.lastLesson())));
+                }
+                case 2 -> {
+                    sendMessages.add(EditMessageText.builder()
+                            .chatId(chatId)
+                            .text("Конец пропуска: " +update.getCallbackQuery().getData())
+                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                            .build());
+                    sendMessages.add(getInlineKeyboardMarkup(update,
+                            dialogAttribute,
+                            TYPE_OF_ABSENTEEISM,
+                            sheetService.getTypeAndValueOfAbsenteeism()));
+                }
                 case 3 -> {
+                    sendMessages.add(EditMessageText.builder()
+                            .chatId(chatId)
+                            .text(sheetService.getTypeAndValueOfAbsenteeism().get(update.getCallbackQuery().getData()))
+                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                            .build());
                     dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                     sendMessages.add(SendMessage.builder()
                             .chatId(chatId)

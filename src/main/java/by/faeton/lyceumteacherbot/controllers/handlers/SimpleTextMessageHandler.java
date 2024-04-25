@@ -8,6 +8,7 @@ import by.faeton.lyceumteacherbot.services.SheetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -40,8 +41,8 @@ public class SimpleTextMessageHandler implements MessageHandler {
     }
 
     @Override
-    public List<SendMessage> execute(Update update) {
-        List<SendMessage> sendMessages = new ArrayList<>();
+    public List<BotApiMethod> execute(Update update) {
+        List<BotApiMethod> sendMessages = new ArrayList<>();
         Message message = update.getMessage();
         Long chatId = message.getChatId();
         Optional<User> optionalUser = userRepository.findById(chatId);

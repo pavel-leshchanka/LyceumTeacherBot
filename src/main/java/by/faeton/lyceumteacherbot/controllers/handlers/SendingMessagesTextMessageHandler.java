@@ -6,6 +6,7 @@ import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -32,8 +33,8 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
     }
 
     @Override
-    public List<SendMessage> execute(Update update) {
-        List<SendMessage> sendMessages = new ArrayList<>();
+    public List<BotApiMethod> execute(Update update) {
+        List<BotApiMethod> sendMessages = new ArrayList<>();
         Long chatId = update.getMessage().getChatId();
         dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
             userRepository.getAllUsers().forEach(user -> {
