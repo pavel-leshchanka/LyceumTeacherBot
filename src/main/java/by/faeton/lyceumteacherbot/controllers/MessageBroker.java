@@ -38,7 +38,7 @@ public class MessageBroker extends TelegramLongPollingBot {
 
     public void sendUserMessage(BotApiMethod sendMessage) {
         try {
-            String name = sendMessage.getClass().getName();
+           // String name = sendMessage.getClass().getName();
             execute(sendMessage);
            // log.info("User {} message arrived.", sendMessage.getChatId());
         } catch (TelegramApiException e) {

@@ -6,10 +6,12 @@ import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
+import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -25,36 +27,42 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
 @RequiredArgsConstructor
 public class SheetService {
     private final SheetListener sheetListener;
-    private final UserService userService;
+    private final UserUtils userUtils;
     private final StudentService studentService;
     private final StudentsRepository studentsRepository;
     private final SheetListNameConfig sheetListNameConfig;
     private final FieldsNameConfig fieldsNameConfig;
+    private final UserRepository userRepository;
+    private final UserService userService;
     @Getter
     private final HashMap<String, String> typeAndValueOfAbsenteeism;
 
     public String getStudentMarks(User user) {
-        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfDate());
-        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfTypeOfWork());
-        Optional<List<List<String>>> sheetMarksLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfMarks(user));
+        String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(listOfGoogleSheet, userUtils.getCellsNameOfDate());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(listOfGoogleSheet, userUtils.getCellsNameOfTypeOfWork());
+        Optional<List<List<String>>> sheetMarksLine = sheetListener.getSheetList(listOfGoogleSheet, userUtils.getCellsNameOfMarks(user));
         return linesToString(sheetDateLine, sheetTypeLine, sheetMarksLine);
     }
 
     public String getStudentQuarterMarks(User user) {
-        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfQuarterName());
-        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfTypeOfQuarter());
-        Optional<List<List<String>>> sheetQuarterLine = sheetListener.getSheetList(user.getListOfGoogleSheet(), userService.getCellsNameOfQuarterMarks(user));
+        String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(listOfGoogleSheet, userUtils.getCellsNameOfQuarterName());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(listOfGoogleSheet, userUtils.getCellsNameOfTypeOfQuarter());
+        Optional<List<List<String>>> sheetQuarterLine = sheetListener.getSheetList(listOfGoogleSheet, userUtils.getCellsNameOfQuarterMarks(user));
         return linesToString(sheetDateLine, sheetTypeLine, sheetQuarterLine);
     }
 
     public String getStudentLaboratoryNotebook(User user) {
-        String field = userService.getNameOfCellUserLaboratoryNotebook(user);
-        return sheetListener.getCell(user.getListOfGoogleSheet(), field);
+        String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
+        String field = userUtils.getNameOfCellUserLaboratoryNotebook(user);
+        return sheetListener.getCell(listOfGoogleSheet, field);
     }
 
     public String getStudentTestNotebook(User user) {
-        String field = userService.getNameOfCellUserTestNotebook(user);
-        return sheetListener.getCell(user.getListOfGoogleSheet(), field);
+        String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
+        String field = userUtils.getNameOfCellUserTestNotebook(user);
+        return sheetListener.getCell(listOfGoogleSheet, field);
     }
 
     public String getTextOfAbsenteeism() {
@@ -163,5 +171,67 @@ public class SheetService {
         for (List<String> arrayList : arrayLists) {
             typeAndValueOfAbsenteeism.put(arrayList.get(0), arrayList.get(1));
         }
+    }
+
+    public List<SendMessage> sendMessages(DialogAttribute dialogAttribute) {
+        List<String> receivedData = dialogAttribute.getReceivedData();
+        List<SendMessage> sendMessages = new ArrayList<>();
+
+        if (receivedData.size() == 4) {
+            String classParalleles = receivedData.get(0);
+            String classLetters = receivedData.get(1);
+            String sex = receivedData.get(2);
+            String text = receivedData.get(3);
+            List<User> collect = userRepository.getAllUsers().stream()
+                    .filter(u -> {
+                        if (classParalleles.equals("all")) {
+                            return true;
+                        } else {
+                            return u.getClassParallel().equals(classParalleles);
+                        }
+                    })
+                    .filter(u -> {
+                        if (classLetters.equals("all")) {
+                            return true;
+                        } else {
+                            return u.getClassLetter().equals(classLetters);
+                        }
+                    })
+                    .filter(u -> {
+                        if (sex.equals("all")) {
+                            return true;
+                        } else {
+                            return u.getSex().equals(sex);
+                        }
+                    })
+                    .toList();
+            if (text.equals("lab_nb")) {
+                for (User user : collect) {
+                    if (getStudentLaboratoryNotebook(user).isEmpty()) {
+                        sendMessages.add(SendMessage.builder()
+                                .chatId(user.getTelegramUserId())
+                                .text("Принеси тетрадь для лабораторных работ!")
+                                .build());
+                    }
+                }
+            } else if (text.equals("test_nb")) {
+                for (User user : collect) {
+                    if (getStudentTestNotebook(user).isEmpty()) {
+                        sendMessages.add(SendMessage.builder()
+                                .chatId(user.getTelegramUserId())
+                                .text("Принеси тетрадь для контрольных работ!")
+                                .build());
+                    }
+                }
+            } else {
+                for (User user : collect) {
+                    sendMessages.add(SendMessage.builder()
+                            .chatId(user.getTelegramUserId())
+                            .text(text)
+                            .build());
+                }
+            }
+        }
+        return sendMessages;
     }
 }

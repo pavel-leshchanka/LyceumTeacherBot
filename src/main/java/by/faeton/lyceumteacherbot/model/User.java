@@ -12,9 +12,11 @@ import lombok.NoArgsConstructor;
 public class User {
 
     private Long telegramUserId;
-    private String listOfGoogleSheet;
+    private String classParallel;
+    private String classLetter;
     private String fieldOfSheetWithUser;
     private String userName;
+    private String sex;
     private UserLevel userLevel;
 
 }
