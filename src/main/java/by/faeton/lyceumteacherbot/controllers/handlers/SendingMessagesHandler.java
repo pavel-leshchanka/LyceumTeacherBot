@@ -1,6 +1,5 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
-import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
@@ -28,7 +27,7 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SendingMessagesTextMessageHandler implements MessageHandler {
+public class SendingMessagesHandler implements Handler {
 
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
@@ -62,15 +61,15 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
         if (update.hasMessage()) {
             Long chatId = update.getMessage().getChatId();
             Optional<User> optionalUser = userRepository.findById(chatId);
-            if (update.getMessage().getText().equals("/send_message")) {
+            if (update.getMessage().getText().equals("/send_message") && dialogAttributesService.find(chatId).isEmpty()) {
                 optionalUser.ifPresentOrElse(user -> {
                             if (user.getUserLevel().equals(UserLevel.ADMIN)) {
                                 Set<String> classParallels = userService.getClassParallels();
                                 classParallels.add("all");
-                                sendMessages.add(getInlineKeyboardMarkup(chatId,
+                                sendMessages.add(getKeyboard(chatId,
                                         "Параллель",
                                         classParallels
-                                        ));
+                                ));
                                 dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, chatId);
                             } else {
                                 sendMessages.add(SendMessage.builder()
@@ -84,113 +83,97 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
                                 .text(NOT_AUTHORIZER)
                                 .build()));
             }
-            Optional<DialogAttribute> dialogAttribute = dialogAttributesService.find(chatId);
-            dialogAttribute.ifPresent(dialogAttribute1 -> {
-                if (dialogAttribute1.getStepOfDialog().equals(3)) {
-                    if (update.hasMessage()){
+            dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
+                if (dialogAttribute.getStepOfDialog().equals(3)) {
                     sendMessages.add(EditMessageText.builder()
                             .chatId(chatId)
                             .text(update.getMessage().getText())
-                            .messageId(update.getMessage().getMessageId()-1)
-                            .build());}
-                    if (update.hasCallbackQuery()){
-                        sendMessages.add(EditMessageText.builder()
-                                .chatId(chatId)
-                                .text(update.getMessage().getText())
-                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                                .build());}
-                    dialogAttributesService.nextStep(dialogAttribute1, update.getMessage().getText());
+                            .messageId(update.getMessage().getMessageId() - 1)
+                            .build());
+                    dialogAttributesService.nextStep(dialogAttribute, update.getMessage().getText());
                     sendMessages.add(SendMessage.builder()
                             .chatId(chatId)
                             .text(WRITING_IN_PROGRESS)
                             .build());
-                    List<SendMessage> sendMessages1 = sheetService.sendMessages(dialogAttribute.get());
-                    sendMessages.addAll(sendMessages1);
+                    sendMessages.addAll(sheetService.sendMessages(dialogAttribute));
                     sendMessages.add(SendMessage.builder()
                             .chatId(chatId)
                             .text(WRITING_IS_COMPLETED)
                             .build());
-                    dialogAttributesService.finalStep(chatId);
+                    dialogAttributesService.deleteByTelegramId(chatId);
                 }
             });
-
-
         }
         if (update.hasCallbackQuery()) {
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
-            Optional<DialogAttribute> dialogAttribute = dialogAttributesService.find(chatId);
-            Optional<User> optionalUser = userRepository.findById(chatId);
+            dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
+                switch (dialogAttribute.getStepOfDialog()) {
+                    case 0 -> {
+                        sendMessages.add(EditMessageText.builder()
+                                .chatId(chatId)
+                                .text(update.getCallbackQuery().getData())
+                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                                .build());
+                        dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
+                        Set<String> classLetters = userService.getClassLetters();
+                        classLetters.add("all");
+                        sendMessages.add(getKeyboard(chatId,
+                                "Буква класса",
+                                classLetters
+                        ));
+                    }
+                    case 1 -> {
+                        sendMessages.add(EditMessageText.builder()
+                                .chatId(chatId)
+                                .text(update.getCallbackQuery().getData())
+                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                                .build());
+                        dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
+                        Set<String> sex = userService.getSex();
+                        sex.add("all");
+                        sendMessages.add(getKeyboard(chatId,
+                                "Пол",
+                                sex
+                        ));
 
-            switch (dialogAttribute.get().getStepOfDialog()) {
-
-                case 0 -> {
-                    sendMessages.add(EditMessageText.builder()
-                            .chatId(chatId)
-                            .text(update.getCallbackQuery().getData())
-                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                            .build());
-                    dialogAttributesService.nextStep(dialogAttribute.get(), update.getCallbackQuery().getData());
-                    Set<String> classLetters = userService.getClassLetters();
-                    classLetters.add("all");
-                    sendMessages.add(getInlineKeyboardMarkup(chatId,
-                            "Буква класса",
-                            classLetters
-                    ));
+                    }
+                    case 2 -> {
+                        sendMessages.add(EditMessageText.builder()
+                                .chatId(chatId)
+                                .text(update.getCallbackQuery().getData())
+                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                                .build());
+                        dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
+                        sendMessages.add(getKeyboard(chatId,
+                                "Тип отправки? Или введи сообщение",
+                                Set.of("lab_nb", "test_nb")
+                        ));
+                    }
+                    case 3 -> {
+                        sendMessages.add(EditMessageText.builder()
+                                .chatId(chatId)
+                                .text(update.getCallbackQuery().getData())
+                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                                .build());
+                        dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
+                        sendMessages.add(SendMessage.builder()
+                                .chatId(chatId)
+                                .text(WRITING_IN_PROGRESS)
+                                .build());
+                        sendMessages.addAll(sheetService.sendMessages(dialogAttribute));
+                        sendMessages.add(SendMessage.builder()
+                                .chatId(chatId)
+                                .text(WRITING_IS_COMPLETED)
+                                .build());
+                        dialogAttributesService.deleteByTelegramId(chatId);
+                    }
                 }
-                case 1 -> {
-                    sendMessages.add(EditMessageText.builder()
-                            .chatId(chatId)
-                            .text(update.getCallbackQuery().getData())
-                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                            .build());
-                    dialogAttributesService.nextStep(dialogAttribute.get(), update.getCallbackQuery().getData());
-                    Set<String> sex = userService.getSex();
-                    sex.add("all");
-                    sendMessages.add(getInlineKeyboardMarkup(chatId,
-                            "Пол",
-                            sex
-                    ));
-
-                }
-                case 2 -> {
-                    sendMessages.add(EditMessageText.builder()
-                            .chatId(chatId)
-                            .text(update.getCallbackQuery().getData())
-                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                            .build());
-                    dialogAttributesService.nextStep(dialogAttribute.get(), update.getCallbackQuery().getData());
-                    sendMessages.add(getInlineKeyboardMarkup(chatId,
-                            "Тип отправки? Или введи сообщение",
-                            Set.of("lab_nb", "test_nb")
-                    ));
-                }
-                case 3 -> {
-                    sendMessages.add(EditMessageText.builder()
-                            .chatId(chatId)
-                            .text(update.getCallbackQuery().getData())
-                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                            .build());
-
-                    dialogAttributesService.nextStep(dialogAttribute.get(), update.getCallbackQuery().getData());
-                    sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(WRITING_IN_PROGRESS)
-                            .build());
-                    sendMessages.addAll(sheetService.sendMessages(dialogAttribute.get()));
-                    sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(WRITING_IS_COMPLETED)
-                            .build());
-
-                    dialogAttributesService.finalStep(chatId);
-                }
-            }
-
+            });
         }
         return sendMessages;
     }
 
-    private SendMessage getInlineKeyboardMarkup(Long chatId, String text, Set<String> callbackData) {
+    private SendMessage getKeyboard(Long chatId, String text, Set<String> callbackData) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         for (String s : callbackData) {
@@ -201,6 +184,12 @@ public class SendingMessagesTextMessageHandler implements MessageHandler {
                     .build());
             rowsInline.add(row);
         }
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(InlineKeyboardButton.builder()
+                .text("Отмена")
+                .callbackData("Cancel")
+                .build());
+        rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
         return SendMessage.builder()
                 .chatId(chatId)

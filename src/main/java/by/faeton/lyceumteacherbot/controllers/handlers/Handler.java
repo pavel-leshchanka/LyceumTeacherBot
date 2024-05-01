@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
-public interface MessageHandler {
+public interface Handler {
     List<BotApiMethod> execute(Update update);
 
     boolean isAppropriateTypeMessage(Update update);

@@ -55,8 +55,8 @@ public class UserRepository {
                             .classLetter(value.get(2))
                             .fieldOfSheetWithUser(value.get(3))
                             .userName(value.get(4))
-                            .sex(value.get(5))
-                            .userLevel(UserLevel.valueOf(value.get(6)))
+                            .sex(value.get(7))
+                            .userLevel(UserLevel.valueOf(value.get(8)))
                             .build());
                 } catch (IllegalArgumentException ignored) {
                 }

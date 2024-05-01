@@ -1,11 +1,11 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
-import by.faeton.lyceumteacherbot.model.*;
-import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
+import by.faeton.lyceumteacherbot.model.DialogAttribute;
+import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.SheetService;
-import by.faeton.lyceumteacherbot.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,26 +13,21 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SimpleTextMessageHandler implements MessageHandler {
+public class SimpleTextHandler implements Handler {
 
     private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
-    private final StudentsRepository studentsRepository;
-    private final UserService userService;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -149,9 +144,5 @@ public class SimpleTextMessageHandler implements MessageHandler {
 
     private String arrivedHelp() {
         return HELP;
-    }
-
-    private String arrivedAnother() {
-        return ANOTHER_MESSAGES;
     }
 }

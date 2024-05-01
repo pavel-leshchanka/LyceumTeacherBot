@@ -36,4 +36,7 @@ public class DialogAttributesService {
     public void finalStep(Long chatId) {
         dialogAttributeRepository.deleteById(chatId);
     }
+    public void deleteByTelegramId(Long chatId){
+        dialogAttributeRepository.deleteById(chatId);
+    }
 }

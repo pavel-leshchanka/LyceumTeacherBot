@@ -1,7 +1,10 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
-import by.faeton.lyceumteacherbot.model.*;
+import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
+import by.faeton.lyceumteacherbot.model.Student;
+import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
@@ -26,7 +29,7 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
+public class MarkingAbsenteeismHandler implements Handler {
 
     private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
@@ -66,7 +69,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                                 sendMessages.add(SendMessage.builder()
                                         .chatId(chatId)
                                         .text(CLASS_STUDENTS)
-                                        .replyMarkup(getInlineKeyboardMarkup(studentsRepository.getAllStudents()))
+                                        .replyMarkup(getKeyboard(studentsRepository.getAllStudents()))
                                         .build());
                                 dialogAttributesService.createDialog(DialogTypeStarted.ABSENTEEISM, chatId);
                             } else {
@@ -82,21 +85,30 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                                 .build()));
             }
         }
-
         if (update.hasCallbackQuery()) {
             long chatId = update.getCallbackQuery().getMessage().getChatId();
             dialogAttributesService.find(chatId).ifPresent(dialogAttribute -> {
                 switch (dialogAttribute.getStepOfDialog()) {
                     case 0 -> {
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
-                        sendMessages.add(EditMessageText.builder()
-                                .chatId(chatId)
-                                .text(studentsRepository.findByNumber(update.getCallbackQuery().getData()).get().getStudentName())
-                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                                .build());
-                        sendMessages.add(getInlineKeyboardMarkup(update,
-                                START_ABSENTEEISM,
-                                getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson())));
+                        studentsRepository.findByNumber(update.getCallbackQuery().getData()).ifPresentOrElse(student -> {
+                                    sendMessages.add(EditMessageText.builder()
+                                            .chatId(chatId)
+                                            .text(student.getStudentName())
+                                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                                            .build());
+                                    sendMessages.add(getKeyboard(update,
+                                            START_ABSENTEEISM,
+                                            getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson())));
+                                }, () -> {
+                                    EditMessageText.builder()
+                                            .chatId(chatId)
+                                            .text("Ученик не найден, повторите попытку.")
+                                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                                            .build();
+                                    dialogAttributesService.deleteByTelegramId(chatId);
+                                }
+                        );
                     }
                     case 1 -> {
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
@@ -105,7 +117,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                                 .text("Начало пропуска: " + update.getCallbackQuery().getData())
                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                 .build());
-                        sendMessages.add(getInlineKeyboardMarkup(update,
+                        sendMessages.add(getKeyboard(update,
                                 END_ABSENTEEISM,
                                 getClassesNumbers(Integer.parseInt(update.getCallbackQuery().getData()), schoolConfig.lastLesson())));
                     }
@@ -116,7 +128,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                                 .text("Конец пропуска: " + update.getCallbackQuery().getData())
                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                 .build());
-                        sendMessages.add(getInlineKeyboardMarkup(update,
+                        sendMessages.add(getKeyboard(update,
                                 TYPE_OF_ABSENTEEISM,
                                 sheetService.getTypeAndValueOfAbsenteeism()));
                     }
@@ -142,7 +154,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                                     .text(WRITING_IS_NOT_COMPLETED)
                                     .build());
                         }
-                        dialogAttributesService.finalStep(chatId);
+                        dialogAttributesService.deleteByTelegramId(chatId);
                     }
                 }
             });
@@ -150,7 +162,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
         return sendMessages;
     }
 
-    private SendMessage getInlineKeyboardMarkup(Update update, String text, Map<String, String> map) {
+    private SendMessage getKeyboard(Update update, String text, Map<String, String> map) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         map.forEach((key, value) -> {
@@ -161,6 +173,12 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                     .build());
             rowsInline.add(row);
         });
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(InlineKeyboardButton.builder()
+                .text("Отмена")
+                .callbackData("Cancel")
+                .build());
+        rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
         return SendMessage.builder()
                 .chatId(update.getCallbackQuery().getMessage().getChatId())
@@ -169,11 +187,11 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                 .build();
     }
 
-    private SendMessage getInlineKeyboardMarkup(Update update,  String text, List<String> callbackData) {
-        return getInlineKeyboardMarkup(update, text, callbackData, callbackData);
+    private SendMessage getKeyboard(Update update, String text, List<String> callbackData) {
+        return getKeyboard(update, text, callbackData, callbackData);
     }
 
-    private SendMessage getInlineKeyboardMarkup(Update update, String text, List<String> callbackData, List<String> labels) {
+    private SendMessage getKeyboard(Update update, String text, List<String> callbackData, List<String> labels) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         for (int i = 0; i < callbackData.size(); i++) {
@@ -184,6 +202,12 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                     .build());
             rowsInline.add(row);
         }
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(InlineKeyboardButton.builder()
+                .text("Отмена")
+                .callbackData("Cancel")
+                .build());
+        rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
         return SendMessage.builder()
                 .chatId(update.getCallbackQuery().getMessage().getChatId())
@@ -192,7 +216,7 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                 .build();
     }
 
-    private InlineKeyboardMarkup getInlineKeyboardMarkup(List<Student> students) {
+    private InlineKeyboardMarkup getKeyboard(List<Student> students) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         students.forEach(student -> {
@@ -203,6 +227,12 @@ public class MarkingAbsenteeismCallbackQueryHandler implements MessageHandler {
                     .build());
             rowsInline.add(row);
         });
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        row.add(InlineKeyboardButton.builder()
+                .text("Отмена")
+                .callbackData("Cancel")
+                .build());
+        rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
         return markupInline;
     }
