@@ -6,15 +6,14 @@ import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class UserRepository {
@@ -23,8 +22,6 @@ public class UserRepository {
     private final SheetListener sheetListener;
 
     private final List<User> usersList = new ArrayList<>();
-
-    private static final Logger log = LoggerFactory.getLogger(UserRepository.class);
 
     public Optional<User> findById(Long id) {
         Optional<User> returnedUser = usersList.stream()
@@ -41,6 +38,7 @@ public class UserRepository {
     }
 
     public List<User> getAllUsers() {
+        refreshContext();
         return usersList;
     }
 
@@ -53,10 +51,12 @@ public class UserRepository {
                 try {
                     list.add(User.builder()
                             .telegramUserId(Long.valueOf(value.get(0)))
-                            .listOfGoogleSheet(value.get(1))
-                            .fieldOfSheetWithUser(value.get(2))
-                            .userName(value.get(3))
-                            .userLevel(UserLevel.valueOf(value.get(4)))
+                            .classParallel(value.get(1))
+                            .classLetter(value.get(2))
+                            .fieldOfSheetWithUser(value.get(3))
+                            .userName(value.get(4))
+                            .sex(value.get(7))
+                            .userLevel(UserLevel.valueOf(value.get(8)))
                             .build());
                 } catch (IllegalArgumentException ignored) {
                 }

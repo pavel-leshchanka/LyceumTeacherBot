@@ -1,18 +1,18 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
-import by.faeton.lyceumteacherbot.model.*;
-import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
+import by.faeton.lyceumteacherbot.model.DialogAttribute;
+import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.SheetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +23,11 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SimpleTextMessageHandler implements MessageHandler {
+public class SimpleTextHandler implements Handler {
 
     private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
-    private final StudentsRepository studentsRepository;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -40,8 +39,8 @@ public class SimpleTextMessageHandler implements MessageHandler {
     }
 
     @Override
-    public List<SendMessage> execute(Update update) {
-        List<SendMessage> sendMessages = new ArrayList<>();
+    public List<BotApiMethod> execute(Update update) {
+        List<BotApiMethod> sendMessages = new ArrayList<>();
         Message message = update.getMessage();
         Long chatId = message.getChatId();
         Optional<User> optionalUser = userRepository.findById(chatId);
@@ -103,51 +102,6 @@ public class SimpleTextMessageHandler implements MessageHandler {
                     .chatId(chatId)
                     .text(arrivedHelp())
                     .build());
-            case "/send_message" -> optionalUser.ifPresentOrElse(user -> {
-                        if (user.getUserLevel().equals(UserLevel.ADMIN)) {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(WHAT_SENDING)
-                                    .build());
-                            dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, chatId);
-                        } else {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(NO_ACCESS)
-                                    .build());
-                        }
-                    },
-                    () -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NOT_AUTHORIZER)
-                            .build()));
-
-            case "/absenteeism" -> optionalUser.ifPresentOrElse(user -> {
-                        if (user.getUserLevel().equals(UserLevel.ADMIN)) {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(CLASS_STUDENTS)
-                                    .replyMarkup(getInlineKeyboardMarkup(studentsRepository.getAllStudents()))
-                                    .build());
-                            dialogAttributesService.createDialog(DialogTypeStarted.ABSENTEEISM, chatId);
-                        } else {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(NO_ACCESS)
-                                    .build());
-                        }
-                    },
-                    () -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NOT_AUTHORIZER)
-                            .build()));
-            default -> {
-                log.info("Arrived another message: {} from user {}", message.getText(), chatId);
-                sendMessages.add(SendMessage.builder()
-                        .chatId(chatId)
-                        .text(arrivedAnother())
-                        .build());
-            }
         }
         return sendMessages;
     }
@@ -190,24 +144,5 @@ public class SimpleTextMessageHandler implements MessageHandler {
 
     private String arrivedHelp() {
         return HELP;
-    }
-
-    private String arrivedAnother() {
-        return ANOTHER_MESSAGES;
-    }
-
-    private InlineKeyboardMarkup getInlineKeyboardMarkup(List<Student> students) {
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        students.forEach(student -> {
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            row.add(InlineKeyboardButton.builder()
-                    .text(student.getStudentName())
-                    .callbackData(student.getStudentNumber())
-                    .build());
-            rowsInline.add(row);
-        });
-        markupInline.setKeyboard(rowsInline);
-        return markupInline;
     }
 }

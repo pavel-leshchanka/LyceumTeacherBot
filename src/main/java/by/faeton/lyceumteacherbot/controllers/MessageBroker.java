@@ -1,16 +1,20 @@
 package by.faeton.lyceumteacherbot.controllers;
 
 import by.faeton.lyceumteacherbot.config.BotConfig;
-import by.faeton.lyceumteacherbot.controllers.handlers.MessageHandler;
+import by.faeton.lyceumteacherbot.controllers.handlers.Handler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.ANOTHER_MESSAGES;
 
 @Slf4j
 @Component
@@ -18,13 +22,28 @@ import java.util.List;
 public class MessageBroker extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
-    private final List<MessageHandler> handlers;
+    private final List<Handler> handlers;
 
     @Override
     public void onUpdateReceived(Update update) {
-        handlers.stream()
+        List<List<BotApiMethod>> collect = handlers.stream()
                 .filter(handler -> handler.isAppropriateTypeMessage(update))
-                .forEach(handler -> handler.execute(update).forEach(this::sendUserMessage));
+                .map(handler -> handler.execute(update))
+                .collect(Collectors.toList());
+        if (collect.isEmpty()) {
+            sendUserMessage(
+                    SendMessage.builder()
+                            .chatId(update.getCallbackQuery().getMessage().getChatId())
+                            .text(ANOTHER_MESSAGES)
+                            .build());
+        } else if (collect.size() == 1 && collect.getFirst().isEmpty()) {
+            sendUserMessage(SendMessage.builder()
+                    .chatId(update.getMessage().getChatId())
+                    .text(ANOTHER_MESSAGES)
+                    .build());
+        } else {
+            collect.forEach(h -> h.forEach(this::sendUserMessage));
+        }
     }
 
     public String getBotUsername() {
@@ -35,12 +54,13 @@ public class MessageBroker extends TelegramLongPollingBot {
         return botConfig.botToken();
     }
 
-    public void sendUserMessage(SendMessage sendMessage) {
+    public void sendUserMessage(BotApiMethod sendMessage) {
         try {
+            // String name = sendMessage.getClass().getName();
             execute(sendMessage);
-            log.info("User {} message arrived.", sendMessage.getChatId());
+            // log.info("User {} message arrived.", sendMessage.getChatId());
         } catch (TelegramApiException e) {
-            log.warn("User {} message not arrived.", sendMessage.getChatId());
+            //   log.warn("User {} message not arrived.", sendMessage.getChatId());
         }
     }
 }
