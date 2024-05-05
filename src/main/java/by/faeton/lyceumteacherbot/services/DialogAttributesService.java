@@ -33,10 +33,7 @@ public class DialogAttributesService {
         dialogAttributeRepository.save(dialogAttribute);
     }
 
-    public void finalStep(Long chatId) {
-        dialogAttributeRepository.deleteById(chatId);
-    }
-    public void deleteByTelegramId(Long chatId){
+    public void deleteByTelegramId(Long chatId) {
         dialogAttributeRepository.deleteById(chatId);
     }
 }

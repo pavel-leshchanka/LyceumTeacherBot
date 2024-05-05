@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Repository
@@ -21,17 +21,22 @@ public class UserRepository {
     private final SheetListNameConfig sheetListNameConfig;
     private final SheetListener sheetListener;
 
-    private final List<User> usersList = new ArrayList<>();
+    private final Set<String> classParallels;
+    private final Set<String> classLetters;
+    private final Set<String> sex;
+    private final Set<String> studentClasses;
 
-    public Optional<User> findById(Long id) {
+    private final List<User> usersList;
+
+    public Optional<User> findByTelegramId(Long telegramId) {
         Optional<User> returnedUser = usersList.stream()
-                .filter(user -> user.getTelegramUserId().equals(id))
+                .filter(user -> user.getTelegramUserId().equals(telegramId))
                 .findFirst();
         if (returnedUser.isEmpty()) {
-            log.info("User " + id + " not found");
+            log.info("User {} not found", telegramId);
             refreshContext();
             returnedUser = usersList.stream()
-                    .filter(user -> user.getTelegramUserId().equals(id))
+                    .filter(user -> user.getTelegramUserId().equals(telegramId))
                     .findFirst();
         }
         return returnedUser;
@@ -39,17 +44,21 @@ public class UserRepository {
 
     public List<User> getAllUsers() {
         refreshContext();
-        return usersList;
+        return List.copyOf(usersList);
     }
 
-    public void refreshContext() {
+    private void refreshContext() {
         log.info("Called refresh context method");
         Optional<List<List<String>>> values = sheetListener.getSheetList(sheetListNameConfig.baseIdList());
-        List<User> list = new ArrayList<>();
+        classParallels.clear();
+        classLetters.clear();
+        sex.clear();
+        studentClasses.clear();
+        usersList.clear();
         if (values.isPresent()) {
             for (List<String> value : values.get()) {
                 try {
-                    list.add(User.builder()
+                    usersList.add(User.builder()
                             .telegramUserId(Long.valueOf(value.get(0)))
                             .classParallel(value.get(1))
                             .classLetter(value.get(2))
@@ -58,11 +67,31 @@ public class UserRepository {
                             .sex(value.get(7))
                             .userLevel(UserLevel.valueOf(value.get(8)))
                             .build());
+                    classParallels.add(value.get(1));
+                    classLetters.add(value.get(2));
+                    sex.add(value.get(7));
+                    if (UserLevel.valueOf(value.get(8)).equals(UserLevel.ADMIN)) {
+                        studentClasses.add(value.get(1) + value.get(2));
+                    }
                 } catch (IllegalArgumentException ignored) {
                 }
             }
         }
-        usersList.clear();
-        usersList.addAll(list);
+    }
+
+    public Set<String> getClassParallels() {
+        return Set.copyOf(classParallels);
+    }
+
+    public Set<String> getClassLetters() {
+        return Set.copyOf(classLetters);
+    }
+
+    public Set<String> getSex() {
+        return Set.copyOf(sex);
+    }
+
+    public Set<String> getStudentClasses() {
+        return Set.copyOf(studentClasses);
     }
 }

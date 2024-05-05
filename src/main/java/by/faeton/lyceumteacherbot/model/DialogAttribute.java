@@ -1,9 +1,12 @@
 package by.faeton.lyceumteacherbot.model;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,7 +14,9 @@ import java.util.ArrayList;
 
 @Entity
 @Builder
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class DialogAttribute {

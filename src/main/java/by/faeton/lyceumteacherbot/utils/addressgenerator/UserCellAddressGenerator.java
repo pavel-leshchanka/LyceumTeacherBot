@@ -1,4 +1,4 @@
-package by.faeton.lyceumteacherbot.services;
+package by.faeton.lyceumteacherbot.utils.addressgenerator;
 
 import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.model.User;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class UserUtils {
+public class UserCellAddressGenerator {
 
     private final FieldsNameConfig fieldsNameConfig;
 

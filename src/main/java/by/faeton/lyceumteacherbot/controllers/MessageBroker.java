@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -56,11 +57,20 @@ public class MessageBroker extends TelegramLongPollingBot {
 
     public void sendUserMessage(BotApiMethod sendMessage) {
         try {
-            // String name = sendMessage.getClass().getName();
             execute(sendMessage);
-            // log.info("User {} message arrived.", sendMessage.getChatId());
+            if (sendMessage instanceof SendMessage) {
+                log.info("User {} message arrived.", ((SendMessage) sendMessage).getChatId());
+            }
+            if (sendMessage instanceof EditMessageText) {
+                log.info("User {} message arrived.", ((EditMessageText) sendMessage).getChatId());
+            }
         } catch (TelegramApiException e) {
-            //   log.warn("User {} message not arrived.", sendMessage.getChatId());
+            if (sendMessage instanceof SendMessage) {
+                log.warn("User {} message not arrived.", ((SendMessage) sendMessage).getChatId());
+            }
+            if (sendMessage instanceof EditMessageText) {
+                log.warn("User {} message not arrived.", ((EditMessageText) sendMessage).getChatId());
+            }
         }
     }
 }

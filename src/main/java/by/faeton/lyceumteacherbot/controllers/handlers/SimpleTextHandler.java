@@ -2,10 +2,11 @@ package by.faeton.lyceumteacherbot.controllers.handlers;
 
 import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.User;
-import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
-import by.faeton.lyceumteacherbot.services.SheetService;
+import by.faeton.lyceumteacherbot.services.StudentService;
+import by.faeton.lyceumteacherbot.utils.SheetListener;
+import by.faeton.lyceumteacherbot.utils.addressgenerator.UserCellAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,16 +19,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.*;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.AVAILABLE;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.HELP;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AUTHORIZER;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.START;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class SimpleTextHandler implements Handler {
 
-    private final SheetService sheetService;
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
+    private final SheetListener sheetListener;
+    private final UserCellAddressGenerator userCellAddressGenerator;
+    private final StudentService studentService;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -43,7 +50,7 @@ public class SimpleTextHandler implements Handler {
         List<BotApiMethod> sendMessages = new ArrayList<>();
         Message message = update.getMessage();
         Long chatId = message.getChatId();
-        Optional<User> optionalUser = userRepository.findById(chatId);
+        Optional<User> optionalUser = userRepository.findByTelegramId(chatId);
         switch (message.getText()) {
             case "/start" -> sendMessages.add(SendMessage.builder()
                     .chatId(chatId)
@@ -73,23 +80,6 @@ public class SimpleTextHandler implements Handler {
                             .chatId(chatId)
                             .text(NOT_AUTHORIZER)
                             .build()));
-            case "/absenteeism_text" -> optionalUser.ifPresentOrElse(user -> {
-                        if (user.getUserLevel().equals(UserLevel.ADMIN)) {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(sheetService.getTextOfAbsenteeism())
-                                    .build());
-                        } else {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(NO_ACCESS)
-                                    .build());
-                        }
-                    },
-                    () -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NOT_AUTHORIZER)
-                            .build()));
             case "/test_notebook" -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
                             .chatId(chatId)
                             .text(arrivedTestNotebook(user))
@@ -111,7 +101,11 @@ public class SimpleTextHandler implements Handler {
     }
 
     private String arrivedMarks(User user) {
-        String sheetText = sheetService.getStudentMarks(user);
+        String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfDate());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfTypeOfWork());
+        Optional<List<List<String>>> sheetMarksLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfMarks(user));
+        String sheetText = linesToString(sheetDateLine, sheetTypeLine, sheetMarksLine);
         if (sheetText.isEmpty()) {
             return NOT_AVAILABLE;
         }
@@ -119,7 +113,11 @@ public class SimpleTextHandler implements Handler {
     }
 
     private String arrivedQuarterMarks(User user) {
-        String sheetText = sheetService.getStudentQuarterMarks(user);
+        String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfQuarterName());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfTypeOfQuarter());
+        Optional<List<List<String>>> sheetQuarterLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfQuarterMarks(user));
+        String sheetText = linesToString(sheetDateLine, sheetTypeLine, sheetQuarterLine);
         if (sheetText.isEmpty()) {
             return NOT_AVAILABLE;
         }
@@ -127,22 +125,46 @@ public class SimpleTextHandler implements Handler {
     }
 
     private String arrivedLaboratoryNotebook(User user) {
-        String sheetText = sheetService.getStudentLaboratoryNotebook(user);
-        if (sheetText.isEmpty()) {
-            return NOT_AVAILABLE;
+        if (studentService.isStudentLaboratoryNotebook(user)) {
+            return AVAILABLE;
         }
-        return AVAILABLE;
+        return NOT_AVAILABLE;
     }
 
-    private String arrivedTestNotebook(User userId) {
-        String sheetText = sheetService.getStudentTestNotebook(userId);
-        if (sheetText.isEmpty()) {
-            return NOT_AVAILABLE;
+    private String arrivedTestNotebook(User user) {
+        if (studentService.isStudentTestNotebook(user)) {
+            return AVAILABLE;
         }
-        return AVAILABLE;
+        return NOT_AVAILABLE;
     }
 
     private String arrivedHelp() {
         return HELP;
+    }
+
+    @SafeVarargs
+    private final String linesToString(Optional<List<List<String>>>... values) {
+        List<List<String>> returnedList = new ArrayList<>();
+        for (Optional<List<List<String>>> firstValue : values) {
+            firstValue.ifPresent(arrayLists -> returnedList.add(arrayLists.getFirst()));
+        }
+        String returnedText = "";
+        if (returnedList.size() > 1) {
+            int lastNumberListOfValues = returnedList.size() - 1;
+            List<String> lastList = returnedList.get(lastNumberListOfValues);
+            for (int i = 0; i < lastList.size(); i++) {
+                if (lastList.get(i) != null && !lastList.get(i).isEmpty()) {
+                    for (List<String> strings : returnedList) {
+                        if (i < strings.size()) {
+                            returnedText += strings.get(i) + " ";
+                        }
+                    }
+                    returnedText += '\n';
+                }
+            }
+        } else {
+            returnedText = returnedText + NOT_AVAILABLE;
+        }
+        return returnedText;
     }
 }
