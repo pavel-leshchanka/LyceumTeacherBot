@@ -7,6 +7,7 @@ import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,6 +22,11 @@ public class SheetListener {
 
     private final SheetConfig sheetConfig;
     private final Sheets sheetsService;
+
+    @Cacheable("lists")
+    public Optional<List<List<String>>> getSheetListFromCache(String sheetListName, String fields) {
+        return getSheetList(sheetListName, fields);
+    }
 
     public Optional<List<List<String>>> getSheetList(String sheetListName, String fields) {
         String s = sheetListName + (fields.isEmpty() ? "" : "!") + fields;

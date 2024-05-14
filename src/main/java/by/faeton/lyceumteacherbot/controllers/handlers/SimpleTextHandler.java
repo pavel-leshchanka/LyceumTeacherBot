@@ -102,8 +102,8 @@ public class SimpleTextHandler implements Handler {
 
     private String arrivedMarks(User user) {
         String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
-        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfDate());
-        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfTypeOfWork());
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetListFromCache(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfDate());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetListFromCache(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfTypeOfWork());
         Optional<List<List<String>>> sheetMarksLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfMarks(user));
         String sheetText = linesToString(sheetDateLine, sheetTypeLine, sheetMarksLine);
         if (sheetText.isEmpty()) {
@@ -114,8 +114,8 @@ public class SimpleTextHandler implements Handler {
 
     private String arrivedQuarterMarks(User user) {
         String listOfGoogleSheet = user.getClassParallel() + user.getClassLetter();
-        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfQuarterName());
-        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfTypeOfQuarter());
+        Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetListFromCache(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfQuarterName());
+        Optional<List<List<String>>> sheetTypeLine = sheetListener.getSheetListFromCache(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfTypeOfQuarter());
         Optional<List<List<String>>> sheetQuarterLine = sheetListener.getSheetList(listOfGoogleSheet, userCellAddressGenerator.getCellsNameOfQuarterMarks(user));
         String sheetText = linesToString(sheetDateLine, sheetTypeLine, sheetQuarterLine);
         if (sheetText.isEmpty()) {
