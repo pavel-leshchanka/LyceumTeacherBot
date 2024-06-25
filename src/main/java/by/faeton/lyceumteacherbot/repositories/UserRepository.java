@@ -63,13 +63,21 @@ public class UserRepository {
                             .classParallel(value.get(1))
                             .classLetter(value.get(2))
                             .fieldOfSheetWithUser(value.get(3))
-                            .userName(value.get(4))
+                            .userLastName(value.get(4))
+                            .userFirstName(value.get(5))
+                            .userFatherName(value.get(6))
                             .sex(value.get(7))
                             .userLevel(UserLevel.valueOf(value.get(8)))
                             .build());
-                    classParallels.add(value.get(1));
-                    classLetters.add(value.get(2));
-                    sex.add(value.get(7));
+                    if (!value.get(1).equals("")) {
+                        classParallels.add(value.get(1));
+                    }
+                    if (!value.get(2).equals("")) {
+                        classLetters.add(value.get(2));
+                    }
+                    if (!value.get(7).equals("")) {
+                        sex.add(value.get(7));
+                    }
                     if (UserLevel.valueOf(value.get(8)).equals(UserLevel.ADMIN)) {
                         studentClasses.add(value.get(1) + value.get(2));
                     }

@@ -1,5 +1,6 @@
 package by.faeton.lyceumteacherbot.model;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
+
 
 @Builder
 @Getter
@@ -25,7 +26,11 @@ public class User {
     @NotNull
     private String fieldOfSheetWithUser;
     @NotNull
-    private String userName;
+    private String userLastName;
+    @NotNull
+    private String userFirstName;
+    @NotNull
+    private String userFatherName;
     @NotNull
     private String sex;
     @NotNull

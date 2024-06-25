@@ -1,8 +1,8 @@
 plugins {
 	id 'java'
 	id 'war'
-	id 'org.springframework.boot' version '2.7.16'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'org.springframework.boot' version '3.3.0'
+	id 'io.spring.dependency-management' version '1.1.5'
 }
 
 group = 'by.faeton'
@@ -28,11 +28,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	implementation 'com.h2database:h2:2.2.224'
-
+	implementation 'com.h2database:h2'
 
 	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
 
 	implementation 'org.telegram:telegrambots:6.8.0'
@@ -44,6 +42,6 @@ dependencies {
 	implementation 'com.google.api-client:google-api-client-jackson2:2.3.0'
 	implementation 'com.google.api-client:google-api-client-jackson2:1.20.0'
 
-
+	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
 }

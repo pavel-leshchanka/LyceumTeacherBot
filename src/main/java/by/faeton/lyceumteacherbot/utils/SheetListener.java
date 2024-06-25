@@ -83,4 +83,21 @@ public class SheetListener {
             log.warn(e + "data is not written");
         }
     }
+
+    public void writeLog(List<List<Object>> content) {
+        ValueRange body = new ValueRange()
+                .setValues(content);
+        try {
+            String s = "logs!A1";
+            sheetsService.spreadsheets()
+                    .values()
+                    .append(sheetConfig.sheetId(), s, body)
+                    .setValueInputOption("RAW")
+                    .setInsertDataOption("INSERT_ROWS")
+                    .setIncludeValuesInResponse(true)
+                    .execute();
+        } catch (IOException e) {
+            log.warn(e + "data is not written");
+        }
+    }
 }
