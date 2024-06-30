@@ -2,7 +2,6 @@ package by.faeton.lyceumteacherbot.repositories;
 
 import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

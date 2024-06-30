@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.services;
 
 import by.faeton.lyceumteacherbot.model.User;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
+import by.faeton.lyceumteacherbot.repositories.SheetListener;
 import by.faeton.lyceumteacherbot.utils.addressgenerator.UserCellAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

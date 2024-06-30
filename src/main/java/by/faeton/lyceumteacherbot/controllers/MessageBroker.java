@@ -3,7 +3,7 @@ package by.faeton.lyceumteacherbot.controllers;
 import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.controllers.handlers.Handler;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
+import by.faeton.lyceumteacherbot.repositories.SheetListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

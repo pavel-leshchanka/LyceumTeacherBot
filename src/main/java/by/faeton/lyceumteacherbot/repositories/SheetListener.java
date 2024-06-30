@@ -1,4 +1,4 @@
-package by.faeton.lyceumteacherbot.utils;
+package by.faeton.lyceumteacherbot.repositories;
 
 
 import by.faeton.lyceumteacherbot.config.SheetConfig;
@@ -28,14 +28,14 @@ public class SheetListener {
         return getSheetList(sheetListName, fields);
     }
 
-    public Optional<List<List<String>>> getSheetList(String sheetListName, String fields) {
+    public Optional<List<List<String>>> getSheetList(String sheetId, String sheetListName, String fields) {
         String s = sheetListName + (fields.isEmpty() ? "" : "!") + fields;
         List<String> ranges = List.of(s);
         BatchGetValuesResponse readResult = null;
         try {
             readResult = sheetsService.spreadsheets()
                     .values()
-                    .batchGet(sheetConfig.sheetId())
+                    .batchGet(sheetId)
                     .setRanges(ranges)
                     .execute();
         } catch (IOException e) {
@@ -52,6 +52,10 @@ public class SheetListener {
                     .toList());
         }
         return Optional.ofNullable(list);
+    }
+
+    public Optional<List<List<String>>> getSheetList(String sheetListName, String fields) {
+        return getSheetList(sheetConfig.sheetId(), sheetListName, fields);
     }
 
     public Optional<List<List<String>>> getSheetList(String list) {

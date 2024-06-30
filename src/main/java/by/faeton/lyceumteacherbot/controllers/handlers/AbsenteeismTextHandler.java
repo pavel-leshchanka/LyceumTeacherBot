@@ -3,10 +3,10 @@ package by.faeton.lyceumteacherbot.controllers.handlers;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.model.UserLevel;
-import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
+import by.faeton.lyceumteacherbot.repositories.StudentsRepository1;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
+import by.faeton.lyceumteacherbot.repositories.SheetListener;
 import by.faeton.lyceumteacherbot.utils.addressgenerator.StudentCellAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NO_ACCESS;
 @RequiredArgsConstructor
 public class AbsenteeismTextHandler implements Handler {
     private final UserRepository userRepository;
-    private final StudentsRepository studentsRepository;
+    private final StudentsRepository1 studentsRepository1;
     private final SheetListener sheetListener;
     private final SheetListNameConfig sheetListNameConfig;
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
@@ -74,7 +74,7 @@ public class AbsenteeismTextHandler implements Handler {
     }
 
     public String getTextOfAbsenteeism(String classParallelAndLetter) {
-        List<Student> allStudents = studentsRepository.getAllStudentsForClass(classParallelAndLetter);
+        List<Student> allStudents = studentsRepository1.getAllStudentsForClass(classParallelAndLetter);
         int columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2;
         Student student = new Student();
         student.setStudentNumber(String.valueOf(1));

@@ -9,12 +9,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;
 
 @Entity
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SubjectSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -24,6 +30,8 @@ public class SubjectSchedule {
     private DayOfWeek dayOfWeek;
 
     private Integer subjectNumber;
+
+    private Integer semester;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "subject_id")

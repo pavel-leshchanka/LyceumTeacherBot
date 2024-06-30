@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DialogAttributeRepository extends JpaRepository<DialogAttribute, Long> {
 
+    DialogAttribute findByStepOfDialog(Integer stepOfDialog);
 }

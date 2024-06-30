@@ -7,11 +7,11 @@ import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
-import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
+import by.faeton.lyceumteacherbot.repositories.StudentsRepository1;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
-import by.faeton.lyceumteacherbot.utils.SheetListener;
+import by.faeton.lyceumteacherbot.repositories.SheetListener;
 import by.faeton.lyceumteacherbot.utils.addressgenerator.StudentCellAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class MarkingAbsenteeismHandler implements Handler {
 
     private final DialogAttributesService dialogAttributesService;
     private final SchoolConfig schoolConfig;
-    private final StudentsRepository studentsRepository;
+    private final StudentsRepository1 studentsRepository1;
     private final UserRepository userRepository;
     private final SheetListener sheetListener;
     private final SheetListNameConfig sheetListNameConfig;
@@ -83,7 +83,7 @@ public class MarkingAbsenteeismHandler implements Handler {
                                 sendMessages.add(SendMessage.builder()
                                         .chatId(chatId)
                                         .text(CLASS_STUDENTS)
-                                        .replyMarkup(getKeyboard(studentsRepository.getAllStudentsForClass(user.getClassParallel() + user.getClassParallel())))
+                                        .replyMarkup(getKeyboard(studentsRepository1.getAllStudentsForClass(user.getClassParallel() + user.getClassParallel())))
                                         .build());
                                 dialogAttributesService.createDialog(DialogTypeStarted.ABSENTEEISM, chatId);
                             } else {
@@ -106,7 +106,7 @@ public class MarkingAbsenteeismHandler implements Handler {
                     switch (dialogAttribute.getStepOfDialog()) {
                         case 0 -> {
                             dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
-                            studentsRepository.findByNumber(update.getCallbackQuery().getData(), user.getClassParallel() + user.getClassLetter()).ifPresentOrElse(student -> {
+                            studentsRepository1.findByNumber(update.getCallbackQuery().getData(), user.getClassParallel() + user.getClassLetter()).ifPresentOrElse(student -> {
                                         sendMessages.add(EditMessageText.builder()
                                                 .chatId(chatId)
                                                 .text(student.getStudentName())
@@ -265,7 +265,7 @@ public class MarkingAbsenteeismHandler implements Handler {
 
     public boolean writeAbsenteeism(DialogAttribute dialogAttribute, String classParallelAndLetter) {
         List<String> receivedData = dialogAttribute.getReceivedData();
-        Optional<Student> optionalStudent = studentsRepository.findByNumber(receivedData.get(0), classParallelAndLetter);
+        Optional<Student> optionalStudent = studentsRepository1.findByNumber(receivedData.get(0), classParallelAndLetter);
         if (optionalStudent.isPresent() && receivedData.size() == 4) {
             Student student = optionalStudent.get();
             int startOfAbsenteeism = Integer.parseInt(receivedData.get(1));
