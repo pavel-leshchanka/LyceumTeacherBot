@@ -7,7 +7,7 @@ import by.faeton.lyceumteacherbot.repositories.StudentsRepository1;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.repositories.SheetListener;
-import by.faeton.lyceumteacherbot.utils.addressgenerator.StudentCellAddressGenerator;
+import by.faeton.lyceumteacherbot.utils.addressgenerator.CellAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class AbsenteeismTextHandler implements Handler {
     private final SheetListener sheetListener;
     private final SheetListNameConfig sheetListNameConfig;
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
-    private final StudentCellAddressGenerator studentCellAddressGenerator;
+    private final CellAddressGenerator cellAddressGenerator;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -78,9 +78,9 @@ public class AbsenteeismTextHandler implements Handler {
         int columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2;
         Student student = new Student();
         student.setStudentNumber(String.valueOf(1));
-        String startCell = studentCellAddressGenerator.getNameOfStartCellOfAbsenteeism(student, columnNumber);
+        String startCell = cellAddressGenerator.getNameOfStartCellOfAbsenteeism(student, columnNumber);
         student.setStudentNumber(String.valueOf(allStudents.size()));
-        String endCell = studentCellAddressGenerator.getNameOfStartCellOfAbsenteeism(student, columnNumber + 7);
+        String endCell = cellAddressGenerator.getNameOfStartCellOfAbsenteeism(student, columnNumber + 7);
         Optional<List<List<String>>> sheetDateLine = sheetListener.getSheetList(sheetListNameConfig.absenteeismList() + classParallelAndLetter, startCell + ":" + endCell);
         return sheetDateLine.map(arrayLists -> {
             String s = classParallelAndLetter;

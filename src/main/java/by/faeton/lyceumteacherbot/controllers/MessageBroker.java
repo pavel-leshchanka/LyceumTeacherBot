@@ -2,6 +2,7 @@ package by.faeton.lyceumteacherbot.controllers;
 
 import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.controllers.handlers.Handler;
+import by.faeton.lyceumteacherbot.repositories.Logger;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.repositories.SheetListener;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,6 @@ public class MessageBroker extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
     private final List<Handler> handlers;
-    private final SheetListener sheetListener;
     private final UserRepository userRepository;
 
     @Override
@@ -46,7 +46,7 @@ public class MessageBroker extends TelegramLongPollingBot {
                     .chatId(update.getMessage().getChatId())
                     .text(ANOTHER_MESSAGES)
                     .build());
-            sheetListener.writeLog(List.of(List.of(update.getMessage().getChatId(), userRepository.findByTelegramId(update.getMessage().getChatId()).get().getUserFirstName(), userRepository.findByTelegramId(update.getMessage().getChatId()).get().getUserLastName(), update.getMessage().getText())));
+            Logger.log(update.getMessage().getChatId(), userRepository.findByTelegramId(update.getMessage().getChatId()).get(), update.getMessage().getText());
         } else {
             collect.forEach(h -> h.forEach(this::sendUserMessage));
         }

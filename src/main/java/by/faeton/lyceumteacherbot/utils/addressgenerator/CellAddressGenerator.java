@@ -7,13 +7,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class StudentCellAddressGenerator {
+public class CellAddressGenerator {
 
     private static final Integer NUMBER_OF_LETTERS = 26;
     private static final Integer SHIFT_TO_LETTER_A = 64;
-    private final FieldsNameConfig fieldsNameConfig;
+    private static FieldsNameConfig fieldsNameConfig;
 
-    public String getNameOfStartCellOfAbsenteeism(Student student, Integer columnNumber) {
+    public CellAddressGenerator(FieldsNameConfig fieldsNameConfig) {
+        this.fieldsNameConfig = fieldsNameConfig;
+    }
+
+    public static String getNameOfStartCellOfAbsenteeism(Student student, Integer columnNumber) {
+        String s = convertNumberColumnToLetter(columnNumber);
+        String line = String.valueOf((Integer.parseInt(student.getStudentNumber()) + fieldsNameConfig.numberOfFirstColumnWithAbsenteeism()));
+        return s + line;
+    }
+
+    public static String convertNumberColumnToLetter(Integer columnNumber) {
         int number = columnNumber;
         String startCell = "";
         while (number > NUMBER_OF_LETTERS) {
@@ -27,7 +37,6 @@ public class StudentCellAddressGenerator {
             number /= NUMBER_OF_LETTERS;
         }
         startCell = (char) (number + SHIFT_TO_LETTER_A) + startCell;
-        String line = String.valueOf((Integer.parseInt(student.getStudentNumber()) + fieldsNameConfig.numberOfFirstColumnWithAbsenteeism()));
-        return startCell + line;
+        return startCell;
     }
 }

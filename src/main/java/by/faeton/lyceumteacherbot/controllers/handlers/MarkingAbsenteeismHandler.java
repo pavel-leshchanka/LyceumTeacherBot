@@ -12,7 +12,7 @@ import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismReposito
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.repositories.SheetListener;
-import by.faeton.lyceumteacherbot.utils.addressgenerator.StudentCellAddressGenerator;
+import by.faeton.lyceumteacherbot.utils.addressgenerator.CellAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -51,7 +51,7 @@ public class MarkingAbsenteeismHandler implements Handler {
     private final SheetListener sheetListener;
     private final SheetListNameConfig sheetListNameConfig;
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
-    private final StudentCellAddressGenerator studentCellAddressGenerator;
+    private final CellAddressGenerator cellAddressGenerator;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -282,7 +282,7 @@ public class MarkingAbsenteeismHandler implements Handler {
             }
             List<List<Object>> arrayLists = List.of(list);
             Integer columnNumber = LocalDateTime.now().getDayOfMonth() * 8 - 7 + 2 + startOfAbsenteeism;
-            String startCell = studentCellAddressGenerator.getNameOfStartCellOfAbsenteeism(student, columnNumber);
+            String startCell = cellAddressGenerator.getNameOfStartCellOfAbsenteeism(student, columnNumber);
             sheetListener.writeSheet(sheetListNameConfig.absenteeismList() + classParallelAndLetter, startCell, arrayLists);
             return true;
         }
