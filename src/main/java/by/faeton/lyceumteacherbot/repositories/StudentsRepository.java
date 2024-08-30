@@ -1,6 +1,10 @@
 package by.faeton.lyceumteacherbot.repositories;
 
+import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
+import by.faeton.lyceumteacherbot.config.SheetConfig;
+import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import by.faeton.lyceumteacherbot.model.lyceum.Student;
+import by.faeton.lyceumteacherbot.utils.SheetListener;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,15 +13,20 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class StudentsRepository {
-    private static final String MASTER_SHEET_ID = "1m50PxnhIYP-5rXjrXVYfJDw6E4NmEqgb-pGtY9gbG5c";
-    private final List<Student> students;
+
     private final SheetListener sheetListener;
+    private final SheetListNameConfig sheetListNameConfig;
+    private final SheetConfig sheetConfig;
+    private final FieldsNameConfig fieldsNameConfig;
+    private final List<Student> students;
+    private final Set<String> sex;
 
     public Optional<Student> findByStudentId(String studentId) {
         return students.stream()
@@ -25,10 +34,14 @@ public class StudentsRepository {
                 .findFirst();
     }
 
+    public Set<String> getAllStudentsSex() {
+        return Set.copyOf(sex);
+    }
+
     @PostConstruct
     private void setUp() {
         students.clear();
-        students.addAll(sheetListener.getSheetList(MASTER_SHEET_ID, "students", "A2:F100").orElseThrow().stream()
+        students.addAll(sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.allStudents(), fieldsNameConfig.allStudents()).orElseThrow().stream()
                 .map(strings -> Student.builder()
                         .studentId(strings.get(0))
                         .userFirstName(strings.get(1))
@@ -37,5 +50,13 @@ public class StudentsRepository {
                         .sex(strings.get(4))
                         .build())
                 .collect(Collectors.toCollection(ArrayList::new)));
+
+        sex.clear();
+        students.forEach(student -> {
+            String studentSex = student.getSex();
+            if (!studentSex.isEmpty()) {
+                sex.add(studentSex);
+            }
+        });
     }
 }

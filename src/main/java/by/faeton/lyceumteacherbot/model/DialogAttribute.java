@@ -28,6 +28,8 @@ public class DialogAttribute {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    private Long dialogId;
+
     private DialogTypeStarted dialogTypeStarted;
 
     private Integer stepOfDialog;

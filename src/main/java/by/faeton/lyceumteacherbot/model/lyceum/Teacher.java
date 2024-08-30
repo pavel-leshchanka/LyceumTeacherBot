@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @Builder
 @Data
-@Entity
+//@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 public class Teacher {

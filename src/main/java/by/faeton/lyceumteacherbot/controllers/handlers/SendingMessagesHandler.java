@@ -1,12 +1,16 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
+import by.faeton.lyceumteacherbot.config.SchoolConfig;
 import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
+import by.faeton.lyceumteacherbot.model.lyceum.Student;
+import by.faeton.lyceumteacherbot.repositories.JournalRepository;
+import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
-import by.faeton.lyceumteacherbot.services.StudentService;
+import by.faeton.lyceumteacherbot.utils.DefaultMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,6 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +39,9 @@ public class SendingMessagesHandler implements Handler {
 
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
-    private final StudentService studentService;
+    private final StudentsRepository studentsRepository;
+    private final JournalRepository journalRepository;
+    private final SchoolConfig schoolConfig;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
@@ -65,11 +72,12 @@ public class SendingMessagesHandler implements Handler {
             if (update.getMessage().getText().equals("/send_message") && dialogAttributesService.find(chatId).isEmpty()) {
                 userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
                             if (user.getUserLevel().equals(UserLevel.ADMIN)) {
-                                Set<String> classParallels = userRepository.getClassParallels();
-                                classParallels.add("all");
+                                Set<String> classParallels = journalRepository.getClassParallels();
+                                HashSet<String> objects = new HashSet<>(classParallels);
+                                objects.add("all");
                                 sendMessages.add(getKeyboard(chatId,
                                         "Параллель",
-                                        classParallels
+                                        objects
                                 ));
                                 dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, chatId);
                             } else {
@@ -116,11 +124,12 @@ public class SendingMessagesHandler implements Handler {
                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                 .build());
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
-                        Set<String> classLetters = userRepository.getClassLetters();
-                        classLetters.add("all");
+                        Set<String> classLetters = journalRepository.getClassLetters();
+                        HashSet<String> objects = new HashSet<>(classLetters);
+                        objects.add("all");
                         sendMessages.add(getKeyboard(chatId,
                                 "Буква класса",
-                                classLetters
+                                objects
                         ));
                     }
                     case 1 -> {
@@ -130,11 +139,12 @@ public class SendingMessagesHandler implements Handler {
                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                 .build());
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
-                        Set<String> sex = userRepository.getSex();
-                        sex.add("all");
+                        Set<String> sex = studentsRepository.getAllStudentsSex();
+                        HashSet<String> objects = new HashSet<>(sex);
+                        objects.add("all");
                         sendMessages.add(getKeyboard(chatId,
                                 "Пол",
-                                sex
+                                objects
                         ));
 
                     }
@@ -144,11 +154,11 @@ public class SendingMessagesHandler implements Handler {
                                 .text(update.getCallbackQuery().getData())
                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                 .build());
+                        sendMessages.add(SendMessage.builder()
+                                .chatId(chatId)
+                                .text(WHAT_SENDING)
+                                .build());
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
-                        sendMessages.add(getKeyboard(chatId,
-                                WHAT_SENDING,
-                                Set.of("lab_nb", "test_nb")
-                        ));
                     }
                     case 3 -> {
                         sendMessages.add(EditMessageText.builder()
@@ -207,7 +217,7 @@ public class SendingMessagesHandler implements Handler {
             String classLetters = receivedData.get(1);
             String sex = receivedData.get(2);
             String text = receivedData.get(3);
-            List<User> collect = userRepository.getAllUsers().stream()
+            List<User> list = journalRepository.findAllByYear(schoolConfig.currentAcademicYear()).stream()
                     .filter(u -> {
                         if (classParallels.equals("all")) {
                             return true;
@@ -222,6 +232,7 @@ public class SendingMessagesHandler implements Handler {
                             return u.getClassLetter().equals(classLetters);
                         }
                     })
+                    .flatMap(s -> s.getStudents().stream())
                     .filter(u -> {
                         if (sex.equals("all")) {
                             return true;
@@ -229,32 +240,14 @@ public class SendingMessagesHandler implements Handler {
                             return u.getSex().equals(sex);
                         }
                     })
+                    .flatMap(student -> userRepository.findBySubjectOfEducationId(student.getStudentId()).stream())
+                    .filter(user -> user.getUserLevel().equals(UserLevel.ADMIN))
                     .toList();
-            if (text.equals("lab_nb")) {
-                for (User user : collect) {
-                    if (!studentService.isStudentLaboratoryNotebook(user)) {
-                        sendMessages.add(SendMessage.builder()
-                                .chatId(user.getTelegramUserId())
-                                .text("Принеси тетрадь для лабораторных работ!")
-                                .build());
-                    }
-                }
-            } else if (text.equals("test_nb")) {
-                for (User user : collect) {
-                    if (!studentService.isStudentTestNotebook(user)) {
-                        sendMessages.add(SendMessage.builder()
-                                .chatId(user.getTelegramUserId())
-                                .text("Принеси тетрадь для контрольных работ!")
-                                .build());
-                    }
-                }
-            } else {
-                for (User user : collect) {
-                    sendMessages.add(SendMessage.builder()
-                            .chatId(user.getTelegramUserId())
-                            .text(text)
-                            .build());
-                }
+            for (User user : list) {
+                sendMessages.add(SendMessage.builder()
+                        .chatId(user.getTelegramUserId())
+                        .text(text)
+                        .build());
             }
         }
         return sendMessages;

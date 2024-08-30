@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;
 
-@Entity
+//@Entity
 @Data
 @Builder
 @NoArgsConstructor

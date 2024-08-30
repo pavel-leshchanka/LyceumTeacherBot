@@ -3,27 +3,40 @@ bot:
   botToken: token
 url:
   sheetId: sheetId
-
 sheet-config:
   fields-name:
-    laboratoryNotebookColumn: C
-    testNotebookColumn: D
-    startMarksColumn: K
-    endMarksColumn: DJ
-    startQuarterMarksColumn: E
-    endQuarterMarksColumn: J
-    dateField: 2
-    fieldTypeOfWork: 3
-    studentsFields: A4:B33
-    typeOfAbsenteeism: A35:B38
-    numberOfFirstColumnWithAbsenteeism: 3
+     journals: A2:G100
+     students: B2:B31
+     subjects: A2:C31
+     schedule: A1:H20
+     yearSchedule: A1:D6
+     tasks: A1:CGZ38
+     consolidateStatement: A1:AC32
+     allStudents: A2:F100
+     allTeachers: A2:F100
+     absenteeismType: A2:B10
   sheet-lists:
-    baseIdList: baseIdList
-    absenteeismList: Absenteeism
+     journals: journals
+     students: students
+     subjects: subjects
+     schedule: schedule
+     yearSchedule: yearSchedule
+     tasks: tasks
+     firstQuarterNumbers: firstQuarterNumbers
+     secondQuarterNumbers: secondQuarterNumbers
+     threeQuarterNumbers: threeQuarterNumbers
+     fourQuarterNumbers: fourQuarterNumbers
+     yearNumbers: yearNumbers
+     examNumbers: examNumbers
+     finalNumbers: finalNumbers
+     baseIdList: baseIdList
+     allStudents: students
+     allTeachers: teachers
+     absenteeismType: absenteeismType
 school:
+  currentAcademicYear: 2024
   firstLesson: 0
   lastLesson: 7
-
 spring:
   datasource:
     url: jdbc:h2:mem:mydb

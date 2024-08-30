@@ -19,12 +19,8 @@ import lombok.ToString;
 public class User {
     @NotNull
     private Long telegramUserId;
-    @NotNull
-    private String classParallel;
-    @NotNull
-    private String classLetter;
-    @NotNull
-    private String fieldOfSheetWithUser;
+
+    private String subjectOfEducationId;
     @NotNull
     private String userLastName;
     @NotNull
@@ -35,5 +31,6 @@ public class User {
     private String sex;
     @NotNull
     private UserLevel userLevel;
+
 
 }

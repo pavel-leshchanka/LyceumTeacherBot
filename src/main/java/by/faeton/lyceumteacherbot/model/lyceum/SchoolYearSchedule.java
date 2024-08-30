@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Entity
+//@Entity
 @Data
 @Builder
 @NoArgsConstructor

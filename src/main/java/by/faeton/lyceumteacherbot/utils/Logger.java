@@ -1,4 +1,4 @@
-package by.faeton.lyceumteacherbot.repositories;
+package by.faeton.lyceumteacherbot.utils;
 
 import by.faeton.lyceumteacherbot.model.User;
 import org.springframework.stereotype.Component;

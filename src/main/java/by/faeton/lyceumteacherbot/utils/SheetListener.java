@@ -1,9 +1,10 @@
-package by.faeton.lyceumteacherbot.repositories;
+package by.faeton.lyceumteacherbot.utils;
 
 
 import by.faeton.lyceumteacherbot.config.SheetConfig;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
+import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +23,6 @@ public class SheetListener {
 
     private final SheetConfig sheetConfig;
     private final Sheets sheetsService;
-
-    @Cacheable("lists")
-    public Optional<List<List<String>>> getSheetListFromCache(String sheetListName, String fields) {
-        return getSheetList(sheetListName, fields);
-    }
 
     public Optional<List<List<String>>> getSheetList(String sheetId, String sheetListName, String fields) {
         String s = sheetListName + (fields.isEmpty() ? "" : "!") + fields;
@@ -54,34 +50,18 @@ public class SheetListener {
         return Optional.ofNullable(list);
     }
 
-    public Optional<List<List<String>>> getSheetList(String sheetListName, String fields) {
-        return getSheetList(sheetConfig.sheetId(), sheetListName, fields);
+    public Optional<List<List<String>>> getSheetList(String sheetId, String sheetListName) {
+        return getSheetList(sheetId, sheetListName, "");
     }
 
-    public Optional<List<List<String>>> getSheetList(String list) {
-        return getSheetList(list, "");
-    }
-
-    public String getCell(String sheetListName, String field) {
-        Optional<List<List<String>>> sheetList = getSheetList(sheetListName, field);
-        String returnedText = "";
-        if (sheetList.isPresent()) {
-            returnedText = sheetList.get()
-                    .getFirst()
-                    .getFirst();
-        }
-        return returnedText;
-    }
-
-    public void writeSheet(String sheetListName, String startCell, List<List<Object>> content) {
-        ValueRange body = new ValueRange()
-                .setValues(content);
+    public void writeSheet(String sheetId, List<ValueRange> data) {
         try {
-            String s = sheetListName + (startCell.isEmpty() ? "" : "!") + startCell;
+            BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
+                    .setValueInputOption("RAW")
+                    .setData(data);
             sheetsService.spreadsheets()
                     .values()
-                    .update(sheetConfig.sheetId(), s, body)
-                    .setValueInputOption("RAW")
+                    .batchUpdate(sheetId, body)
                     .execute();
         } catch (IOException e) {
             log.warn(e + "data is not written");

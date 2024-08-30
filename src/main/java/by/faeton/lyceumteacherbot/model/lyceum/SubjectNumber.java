@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+//@Entity
 @Data
 @Builder
 @NoArgsConstructor
@@ -32,4 +32,11 @@ public class SubjectNumber {
     @JoinColumn(name = "student_id")
     private Student student;
 
+    public SubjectNumber(String number, Student student) {
+    }
+
+    public void setValuee(String valuee) {
+        this.valuee = valuee;
+        this.id = null;
+    }
 }

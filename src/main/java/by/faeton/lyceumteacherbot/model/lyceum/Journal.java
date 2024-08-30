@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Entity
+//@Entity
 @Data
 @Builder
 @NoArgsConstructor
@@ -45,6 +45,8 @@ public class Journal {
     private String classLetter;
 
     private String nameGUO;
+
+    private Integer educationalYear;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "teacher_id")

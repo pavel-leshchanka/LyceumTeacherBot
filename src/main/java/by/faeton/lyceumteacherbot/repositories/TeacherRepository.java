@@ -1,6 +1,10 @@
 package by.faeton.lyceumteacherbot.repositories;
 
+import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
+import by.faeton.lyceumteacherbot.config.SheetConfig;
+import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import by.faeton.lyceumteacherbot.model.lyceum.Teacher;
+import by.faeton.lyceumteacherbot.utils.SheetListener;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +19,12 @@ import java.util.stream.Collectors;
 @Repository
 @RequiredArgsConstructor
 public class TeacherRepository {
-    private static final String MASTER_SHEET_ID = "1m50PxnhIYP-5rXjrXVYfJDw6E4NmEqgb-pGtY9gbG5c";
 
-    private final List<Teacher> teachers;
     private final SheetListener sheetListener;
+    private final SheetConfig sheetConfig;
+    private final SheetListNameConfig sheetListNameConfig;
+    private final FieldsNameConfig fieldsNameConfig;
+    private final List<Teacher> teachers;
 
     public Optional<Teacher> findByTeacherId(String teacherId) {
         return teachers.stream().filter(teacher -> teacher.getTeacherId().equals(teacherId)).findFirst();
@@ -27,7 +33,7 @@ public class TeacherRepository {
     @PostConstruct
     private void setUp() {
         teachers.clear();
-        teachers.addAll(sheetListener.getSheetList(MASTER_SHEET_ID, "teachers", "A2:F100").orElseThrow().stream()
+        teachers.addAll(sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.allTeachers(), fieldsNameConfig.allTeachers()).orElseThrow().stream()
                 .map(strings -> Teacher.builder()
                         .teacherId(strings.get(0))
                         .name(strings.get(1))
