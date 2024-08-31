@@ -3,7 +3,6 @@ package by.faeton.lyceumteacherbot.controllers.handlers;
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
 import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
-import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.repositories.JournalRepository;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
@@ -152,7 +151,6 @@ public class SendingMessagesHandler implements Handler {
                                 SEX,
                                 objects
                         ));
-
                     }
                     case 2 -> {
                         sendMessages.add(EditMessageText.builder()
@@ -223,7 +221,7 @@ public class SendingMessagesHandler implements Handler {
             String classLetters = receivedData.get(1);
             String sex = receivedData.get(2);
             String text = receivedData.get(3);
-            List<User> list = journalRepository.findAllByYear(schoolConfig.currentAcademicYear()).stream()
+            journalRepository.findAllByYear(schoolConfig.currentAcademicYear()).stream()
                     .filter(u -> {
                         if (classParallels.equals(ALL_CALLBACK)) {
                             return true;
@@ -247,14 +245,11 @@ public class SendingMessagesHandler implements Handler {
                         }
                     })
                     .flatMap(student -> userRepository.findBySubjectOfEducationId(student.getStudentId()).stream())
-                    .filter(user -> user.getUserLevel().equals(UserLevel.ADMIN))//todo
-                    .toList();
-            for (User user : list) {
-                sendMessages.add(SendMessage.builder()
-                        .chatId(user.getTelegramUserId())
-                        .text(text)
-                        .build());
-            }
+                    .filter(user -> user.getUserLevel().equals(UserLevel.STUDENT))
+                    .forEach(user -> sendMessages.add(SendMessage.builder()
+                            .chatId(user.getTelegramUserId())
+                            .text(text)
+                            .build()));
         }
         return sendMessages;
     }

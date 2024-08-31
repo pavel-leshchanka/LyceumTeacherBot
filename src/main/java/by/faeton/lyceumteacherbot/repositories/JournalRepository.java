@@ -265,14 +265,7 @@ public class JournalRepository {
                         .forEach(task -> task.getSubjectNumbers()
                                 .forEach(subjectNumber -> {
                                     if (subjectNumber.getId() == null) {
-                                        int dayOfMonth = /*task.getDate().getDayOfMonth()*/1;
-                                        int month = /*task.getDate().getMonth().getValue()*/9;
-                                        int columnNumber;
-                                        if (month > 8) {
-                                            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month - 9)) + task.getTaskNumber() + 3;
-                                        } else {
-                                            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month + 4)) + task.getTaskNumber() + 3;
-                                        }
+                                        int columnNumber = getColumnNumber(task);
                                         String substring = subjectNumber.getStudent().getStudentId().substring(6);
                                         int integer = Integer.parseInt(substring);
                                         String s = CellAddressGenerator.convertNumberColumnToLetter(columnNumber);
@@ -287,5 +280,17 @@ public class JournalRepository {
 
         sheetListener.writeSheet(journal.getJournalId(), data);
         return true;
+    }
+
+    private static int getColumnNumber(Task task) {
+        int dayOfMonth = task.getDate().getDayOfMonth();
+        int month = task.getDate().getMonth().getValue();
+        int columnNumber;
+        if (month > 8) {
+            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month - 9)) + task.getTaskNumber() + 3;
+        } else {
+            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month + 4)) + task.getTaskNumber() + 3;
+        }
+        return columnNumber;
     }
 }

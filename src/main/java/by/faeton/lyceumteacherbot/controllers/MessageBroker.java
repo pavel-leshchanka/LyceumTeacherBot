@@ -46,7 +46,7 @@ public class MessageBroker extends TelegramLongPollingBot {
             telegramId = update.getCallbackQuery().getMessage().getChatId();
             text = update.getCallbackQuery().getMessage().getText();
         } else {
-            throw new RuntimeException();//todo
+            throw new RuntimeException();
         }
         Optional<User> byTelegramId = userRepository.findByTelegramId(telegramId);
 
