@@ -27,35 +27,34 @@ import java.util.List;
 @Slf4j
 @Configuration
 public class GoogleConfig {
+    private static final String OFFLINE = "offline";
+    private static final String RESOURCE_NOT_FOUND = "Resource not found: ";
+    private static final String USER = "user";
+
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String APPLICATION_NAME = "LyceumTeacher";
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
 
-    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
-    private static final String CREDENTIALS_FILE_PATH = "/google-sheets-client-secret.json";
-
-
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-        InputStream in = GoogleConfig.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT, BotConfig botConfig) throws IOException {
+        InputStream in = GoogleConfig.class.getResourceAsStream(botConfig.credentialsFilePath());
         if (in == null) {
-            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+            throw new FileNotFoundException(RESOURCE_NOT_FOUND + botConfig.credentialsFilePath());
         }
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                .setAccessType("offline")
+                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(botConfig.tokensFolder())))
+                .setAccessType(OFFLINE)
                 .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(botConfig.port()).build();
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize(USER);
     }
 
     @Bean
-    public Sheets getSheetsService() throws IOException, GeneralSecurityException {
+    public Sheets getSheetsService(BotConfig botConfig) throws IOException, GeneralSecurityException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
+        return new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT, botConfig))
+                .setApplicationName(botConfig.botName())
                 .build();
     }
 }

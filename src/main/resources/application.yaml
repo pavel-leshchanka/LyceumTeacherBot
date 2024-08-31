@@ -1,6 +1,9 @@
 bot:
   botName: name
   botToken: token
+  tokensFolder: tokens
+  credentialsFilePath: /google-sheets-client-secret.json
+  port: 8888
 url:
   sheetId: sheetId
 sheet-config:

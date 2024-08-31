@@ -25,7 +25,7 @@ public class SubjectNumber {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    private String valuee;
+    private String valueOfTask;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "student_id")
@@ -34,8 +34,8 @@ public class SubjectNumber {
     public SubjectNumber(String number, Student student) {
     }
 
-    public void setValuee(String valuee) {
-        this.valuee = valuee;
+    public void setValueOfTask(String valueOfTask) {
+        this.valueOfTask = valueOfTask;
         this.id = null;
     }
 }

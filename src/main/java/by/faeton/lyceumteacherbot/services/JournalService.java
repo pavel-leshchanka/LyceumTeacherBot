@@ -33,7 +33,7 @@ public class JournalService {
                         .forEach(task -> task.getSubjectNumbers()
                                 .forEach(subjectNumber -> {
                                     if (subjectNumber.getStudent().getStudentId().equals(studentId)) {
-                                        numberDateSubjects.add(new NumberDateSubject(subjectNumber.getValuee(), task.getDate(), subject.getName()));
+                                        numberDateSubjects.add(new NumberDateSubject(subjectNumber.getValueOfTask(), task.getDate(), subject.getName()));
                                     }
                                 })
                         )
@@ -64,7 +64,7 @@ public class JournalService {
                     numbers.forEach(consolidatedSubject -> consolidatedSubject.getSubjectNumber()
                             .forEach(subjectNumber -> {
                                 if (subjectNumber.getStudent().getStudentId().equals(studentId)) {
-                                    numberSubjects.add(new NumberSubject(subjectNumber.getValuee(), consolidatedSubject.getSubject().getName()));
+                                    numberSubjects.add(new NumberSubject(subjectNumber.getValueOfTask(), consolidatedSubject.getSubject().getName()));
                                 }
                             })
                     );
@@ -93,9 +93,9 @@ public class JournalService {
         tasksOnCurrentDate
                 .forEach(task -> task.getSubjectNumbers()
                         .forEach(subjectNumber -> {
-                            if (typeAndValueOfAbsenteeismRepository.getAllTypeAndValueOfAbsenteeism().containsKey(subjectNumber.getValuee())) {
+                            if (typeAndValueOfAbsenteeismRepository.getAllTypeAndValueOfAbsenteeism().containsKey(subjectNumber.getValueOfTask())) {
                                 studentWithNumberAndNumberOfTasks.add(new StudentWithNumberAndNumberOfTask(subjectNumber.getStudent().getUserLastName(),
-                                        subjectNumber.getValuee(),
+                                        subjectNumber.getValueOfTask(),
                                         task.getTaskNumber()));
                             }
                         })
@@ -115,11 +115,11 @@ public class JournalService {
                                                 .filter(subjectNumber -> subjectNumber.getStudent().equals(student))
                                                 .findFirst();
                                         if (first.isPresent()) {
-                                            first.get().setValuee(numberDateNumberOfSubject.getNumber());
+                                            first.get().setValueOfTask(numberDateNumberOfSubject.getNumber());
                                         } else {
                                             List<SubjectNumber> subjectNumbers = task.getSubjectNumbers();
                                             SubjectNumber subjectNumber = new SubjectNumber();
-                                            subjectNumber.setValuee(numberDateNumberOfSubject.getNumber());
+                                            subjectNumber.setValueOfTask(numberDateNumberOfSubject.getNumber());
                                             subjectNumber.setStudent(student);
                                             subjectNumbers.add(subjectNumber);
                                         }

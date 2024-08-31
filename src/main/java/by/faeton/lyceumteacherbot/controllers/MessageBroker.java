@@ -26,6 +26,13 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.ANOTHER_MESSAGES;
 @Slf4j
 @Component
 public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+    public static final String USER_MESSAGE_ARRIVED = "User {} message arrived.";
+    public static final String USER_MESSAGE_NOT_ARRIVED = "User {} message not arrived.";
+
+    private final BotConfig botConfig;
+    private final List<Handler> handlers;
+    private final UserRepository userRepository;
+    private final TelegramClient telegramClient;
 
     public MessageBroker(BotConfig botConfig, List<Handler> handlers, UserRepository userRepository) {
         this.telegramClient = new OkHttpTelegramClient(botConfig.botToken());
@@ -33,14 +40,6 @@ public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThr
         this.handlers = handlers;
         this.userRepository = userRepository;
     }
-
-
-    public static final String USER_MESSAGE_ARRIVED = "User {} message arrived.";
-    public static final String USER_MESSAGE_NOT_ARRIVED = "User {} message not arrived.";
-    private final BotConfig botConfig;
-    private final List<Handler> handlers;
-    private final UserRepository userRepository;
-    private final TelegramClient telegramClient;
 
     @Override
     public void consume(Update update) {
@@ -61,23 +60,23 @@ public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThr
         }
         Optional<User> byTelegramId = userRepository.findByTelegramId(telegramId);
 
-           if (collect.isEmpty()) {
-               sendUserMessage(SendMessage.builder()
-                       .chatId(update.getCallbackQuery().getMessage().getChatId())
-                       .text(ANOTHER_MESSAGES)
-                       .build());
-               byTelegramId.ifPresentOrElse(byId -> Logger.log(telegramId, byId, text),
-                       () -> Logger.log(telegramId, text));
-           } else if (collect.size() == 1 && collect.getFirst().isEmpty()) {
-               sendUserMessage(SendMessage.builder()
-                       .chatId(update.getMessage().getChatId())
-                       .text(ANOTHER_MESSAGES)
-                       .build());
-               byTelegramId.ifPresentOrElse(byId -> Logger.log(telegramId, byId, text),
-                       () -> Logger.log(telegramId, text));
-           } else {
-               collect.forEach(h -> h.forEach(this::sendUserMessage));
-           }
+        if (collect.isEmpty()) {
+            sendUserMessage(SendMessage.builder()
+                    .chatId(update.getCallbackQuery().getMessage().getChatId())
+                    .text(ANOTHER_MESSAGES)
+                    .build());
+            byTelegramId.ifPresentOrElse(byId -> Logger.log(telegramId, byId, text),
+                    () -> Logger.log(telegramId, text));
+        } else if (collect.size() == 1 && collect.getFirst().isEmpty()) {
+            sendUserMessage(SendMessage.builder()
+                    .chatId(update.getMessage().getChatId())
+                    .text(ANOTHER_MESSAGES)
+                    .build());
+            byTelegramId.ifPresentOrElse(byId -> Logger.log(telegramId, byId, text),
+                    () -> Logger.log(telegramId, text));
+        } else {
+            collect.forEach(h -> h.forEach(this::sendUserMessage));
+        }
     }
 
 

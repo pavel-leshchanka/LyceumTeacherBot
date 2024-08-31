@@ -168,7 +168,7 @@ public class JournalRepository {
                         if (byStudentId.isPresent() && !value.isEmpty()) {
                             SubjectNumber subjectNumber1 = SubjectNumber.builder()
                                     .id((long) (j + 1))
-                                    .valuee(value)
+                                    .valueOfTask(value)
                                     .student(byStudentId.get())
                                     .build();
                             task.getSubjectNumbers().add(subjectNumber1);
@@ -226,7 +226,7 @@ public class JournalRepository {
                         String subjectNumber = consStat.get(j).get(i);
                         if (!subjectNumber.isEmpty()) {
                             SubjectNumber subjectNumber1 = SubjectNumber.builder()
-                                    .valuee(subjectNumber)
+                                    .valueOfTask(subjectNumber)
                                     .student(byStudentId.get())
                                     .build();
                             consolidatedSubject.getSubjectNumber().add(subjectNumber1);
@@ -271,7 +271,7 @@ public class JournalRepository {
                                         String s = CellAddressGenerator.convertNumberColumnToLetter(columnNumber);
                                         data.add(new ValueRange()
                                                 .setRange(sheetListNameConfig.tasks() + "!" + s + integer)
-                                                .setValues(List.of(List.of(subjectNumber.getValuee()))));
+                                                .setValues(List.of(List.of(subjectNumber.getValueOfTask()))));
                                         subjectNumber.setId(1L);
                                     }
                                 })
