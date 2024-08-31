@@ -81,7 +81,7 @@ public class ShowAbsenteeismHandler implements Handler {
             Long chatId = update.getMessage().getChatId();
             if (update.getMessage().getText().equals(ABSENTEEISM_TEXT_COMMAND) && dialogAttributesService.find(chatId).isEmpty()) {
                 userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
-                            if (user.getUserLevel().equals(UserLevel.TEACHER)) {
+                            if (user.getUserLevel().ordinal()>=UserLevel.TEACHER.ordinal()) {
                                 Set<String> classParallels = journalRepository.getClassParallels();
                                 sendMessages.add(getKeyboard(chatId,
                                         CLASS_PARALLEL,

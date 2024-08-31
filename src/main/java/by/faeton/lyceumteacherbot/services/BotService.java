@@ -6,9 +6,9 @@ import by.faeton.lyceumteacherbot.repositories.TeacherRepository;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.jvnet.hk2.annotations.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class BotService {
     private final JournalRepository journalRepository;
@@ -18,10 +18,10 @@ public class BotService {
     private final UserRepository userRepository;
 
     public void refreshContext() {
-        journalRepository.refreshContext();
+        userRepository.refreshContext();
         studentsRepository.refreshContext();
         teacherRepository.refreshContext();
         typeAndValueOfAbsenteeismRepository.refreshContext();
-        userRepository.refreshContext();
+        journalRepository.refreshContext();
     }
 }

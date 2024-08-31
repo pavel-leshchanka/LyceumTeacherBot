@@ -18,12 +18,13 @@ import lombok.ToString;
 public class User {
     @NotNull
     private Long telegramUserId;
+
     private String subjectOfEducationId;
     @NotNull
     private String userLastName;
     @NotNull
     private String userFirstName;
-    @NotNull
+
     private String userFatherName;
     @NotNull
     private String sex;

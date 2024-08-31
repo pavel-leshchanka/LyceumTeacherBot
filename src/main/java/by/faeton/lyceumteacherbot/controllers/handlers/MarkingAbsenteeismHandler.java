@@ -84,7 +84,7 @@ public class MarkingAbsenteeismHandler implements Handler {
         if (update.hasMessage()) {
             Long chatId = update.getMessage().getChatId();
             userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
-                        if (user.getUserLevel().equals(UserLevel.TEACHER)) {
+                        if (user.getUserLevel().ordinal() >= UserLevel.TEACHER.ordinal()) {
                             Set<String> classParallels = journalRepository.getClassParallels();
                             sendMessages.add(getKeyboard(chatId,
                                     CLASS_PARALLEL,

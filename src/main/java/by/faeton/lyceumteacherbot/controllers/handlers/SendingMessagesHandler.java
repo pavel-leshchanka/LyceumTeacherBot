@@ -77,7 +77,7 @@ public class SendingMessagesHandler implements Handler {
             Long chatId = update.getMessage().getChatId();
             if (update.getMessage().getText().equals(SEND_MESSAGE_COMMAND) && dialogAttributesService.find(chatId).isEmpty()) {
                 userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
-                            if (user.getUserLevel().equals(UserLevel.ADMIN)) {
+                            if (user.getUserLevel().ordinal() >= UserLevel.ADMIN.ordinal()) {
                                 Set<String> classParallels = journalRepository.getClassParallels();
                                 HashSet<String> objects = new HashSet<>(classParallels);
                                 objects.add(ALL_CALLBACK);
@@ -132,7 +132,7 @@ public class SendingMessagesHandler implements Handler {
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                         Set<String> classLetters = journalRepository.getClassLetters();
                         HashSet<String> objects = new HashSet<>(classLetters);
-                        objects.add("all");
+                        objects.add(ALL_CALLBACK);
                         sendMessages.add(getKeyboard(chatId,
                                 CLASS_LETTER,
                                 objects
@@ -247,7 +247,7 @@ public class SendingMessagesHandler implements Handler {
                         }
                     })
                     .flatMap(student -> userRepository.findBySubjectOfEducationId(student.getStudentId()).stream())
-                    .filter(user -> user.getUserLevel().equals(UserLevel.ADMIN))
+                    .filter(user -> user.getUserLevel().equals(UserLevel.ADMIN))//todo
                     .toList();
             for (User user : list) {
                 sendMessages.add(SendMessage.builder()
