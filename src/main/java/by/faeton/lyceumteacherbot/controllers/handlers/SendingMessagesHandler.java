@@ -5,12 +5,10 @@ import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
-import by.faeton.lyceumteacherbot.model.lyceum.Student;
 import by.faeton.lyceumteacherbot.repositories.JournalRepository;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
-import by.faeton.lyceumteacherbot.utils.DefaultMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,16 +24,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static by.faeton.lyceumteacherbot.utils.CallbackQueryStatic.ALL_CALLBACK;
+import static by.faeton.lyceumteacherbot.utils.CallbackQueryStatic.CANCEL_CALLBACK;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CANCEL;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CLASS_LETTER;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CLASS_PARALLEL;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AUTHORIZER;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NO_ACCESS;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.SEX;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.WHAT_SENDING;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.WRITING_IN_PROGRESS;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.WRITING_IS_COMPLETED;
+import static by.faeton.lyceumteacherbot.utils.TelegramCommand.SEND_MESSAGE_COMMAND;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class SendingMessagesHandler implements Handler {
+
 
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
@@ -51,7 +57,7 @@ public class SendingMessagesHandler implements Handler {
                             .getChatId())
                     .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.SEND_MESSAGE))
                     .orElse(false);
-            return b || update.getMessage().getText().equals("/send_message");
+            return b || update.getMessage().getText().equals(SEND_MESSAGE_COMMAND);
         }
         if (update.hasCallbackQuery()) {
             return dialogAttributesService
@@ -69,14 +75,14 @@ public class SendingMessagesHandler implements Handler {
         List<BotApiMethod> sendMessages = new ArrayList<>();
         if (update.hasMessage()) {
             Long chatId = update.getMessage().getChatId();
-            if (update.getMessage().getText().equals("/send_message") && dialogAttributesService.find(chatId).isEmpty()) {
+            if (update.getMessage().getText().equals(SEND_MESSAGE_COMMAND) && dialogAttributesService.find(chatId).isEmpty()) {
                 userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
                             if (user.getUserLevel().equals(UserLevel.ADMIN)) {
                                 Set<String> classParallels = journalRepository.getClassParallels();
                                 HashSet<String> objects = new HashSet<>(classParallels);
-                                objects.add("all");
+                                objects.add(ALL_CALLBACK);
                                 sendMessages.add(getKeyboard(chatId,
-                                        "Параллель",
+                                        CLASS_PARALLEL,
                                         objects
                                 ));
                                 dialogAttributesService.createDialog(DialogTypeStarted.SEND_MESSAGE, chatId);
@@ -128,7 +134,7 @@ public class SendingMessagesHandler implements Handler {
                         HashSet<String> objects = new HashSet<>(classLetters);
                         objects.add("all");
                         sendMessages.add(getKeyboard(chatId,
-                                "Буква класса",
+                                CLASS_LETTER,
                                 objects
                         ));
                     }
@@ -141,9 +147,9 @@ public class SendingMessagesHandler implements Handler {
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                         Set<String> sex = studentsRepository.getAllStudentsSex();
                         HashSet<String> objects = new HashSet<>(sex);
-                        objects.add("all");
+                        objects.add(ALL_CALLBACK);
                         sendMessages.add(getKeyboard(chatId,
-                                "Пол",
+                                SEX,
                                 objects
                         ));
 
@@ -197,8 +203,8 @@ public class SendingMessagesHandler implements Handler {
         }
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
-                .text("Отмена")
-                .callbackData("Cancel")
+                .text(CANCEL)
+                .callbackData(CANCEL_CALLBACK)
                 .build());
         rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
@@ -219,14 +225,14 @@ public class SendingMessagesHandler implements Handler {
             String text = receivedData.get(3);
             List<User> list = journalRepository.findAllByYear(schoolConfig.currentAcademicYear()).stream()
                     .filter(u -> {
-                        if (classParallels.equals("all")) {
+                        if (classParallels.equals(ALL_CALLBACK)) {
                             return true;
                         } else {
                             return u.getClassParallel().equals(classParallels);
                         }
                     })
                     .filter(u -> {
-                        if (classLetters.equals("all")) {
+                        if (classLetters.equals(ALL_CALLBACK)) {
                             return true;
                         } else {
                             return u.getClassLetter().equals(classLetters);
@@ -234,7 +240,7 @@ public class SendingMessagesHandler implements Handler {
                     })
                     .flatMap(s -> s.getStudents().stream())
                     .filter(u -> {
-                        if (sex.equals("all")) {
+                        if (sex.equals(ALL_CALLBACK)) {
                             return true;
                         } else {
                             return u.getSex().equals(sex);

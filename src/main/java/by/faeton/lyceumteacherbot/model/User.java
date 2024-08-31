@@ -9,7 +9,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 
-
 @Builder
 @Getter
 @Setter
@@ -19,7 +18,6 @@ import lombok.ToString;
 public class User {
     @NotNull
     private Long telegramUserId;
-
     private String subjectOfEducationId;
     @NotNull
     private String userLastName;
@@ -31,6 +29,5 @@ public class User {
     private String sex;
     @NotNull
     private UserLevel userLevel;
-
 
 }

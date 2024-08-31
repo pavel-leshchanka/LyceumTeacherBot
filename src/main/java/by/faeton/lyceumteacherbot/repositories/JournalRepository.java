@@ -48,7 +48,6 @@ public class JournalRepository {
     private final List<Journal> journals;
     private final Set<String> classParallels;
     private final Set<String> classLetters;
-    private final Set<String> studentClasses;
 
     public Optional<Journal> findByClassLetterAndClassParallelAndYear(String classLetter, String classParallel, Integer year) {
         return journals.stream()
@@ -80,12 +79,8 @@ public class JournalRepository {
         return Set.copyOf(classLetters);
     }
 
-    public Set<String> getStudentClasses() {
-        return Set.copyOf(studentClasses);
-    }
-
     @PostConstruct
-    private void setUp() {
+    public void refreshContext() {
         //journals
         List<Journal> journalList = new ArrayList<>();
         List<List<String>> journalsListsStrings = sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.journals(), fieldsNameConfig.journals()).orElseThrow();
@@ -170,7 +165,7 @@ public class JournalRepository {
                     for (int j = 7; j < tasks.size() - 1; j++) {
                         Optional<Student> byStudentId = studentsRepository.findByStudentId(tasks.get(j).get(1));
                         String value = tasks.get(j).get(i);
-                        if (byStudentId.isPresent() && !value.equals("")) {
+                        if (byStudentId.isPresent() && !value.isEmpty()) {
                             SubjectNumber subjectNumber1 = SubjectNumber.builder()
                                     .id((long) (j + 1))
                                     .valuee(value)
@@ -205,12 +200,10 @@ public class JournalRepository {
 
         classParallels.clear();
         classLetters.clear();
-        studentClasses.clear();
 
         journals.forEach(journal -> {
             classParallels.add(journal.getClassParallel());
             classLetters.add(journal.getClassLetter());
-            studentClasses.add(journal.getClassParallel());
         });
     }
 
@@ -231,7 +224,7 @@ public class JournalRepository {
                     Optional<Student> byStudentId = studentsRepository.findByStudentId(student);
                     if (byStudentId.isPresent()) {
                         String subjectNumber = consStat.get(j).get(i);
-                        if (!subjectNumber.equals("")) {
+                        if (!subjectNumber.isEmpty()) {
                             SubjectNumber subjectNumber1 = SubjectNumber.builder()
                                     .valuee(subjectNumber)
                                     .student(byStudentId.get())
@@ -251,7 +244,7 @@ public class JournalRepository {
         List<String> strings = subjectsScheduleList.get(i);
         for (int j = 1; j < strings.size() - 1; j++) {
             int a = j;
-            if (!strings.get(a).equals("")) {
+            if (!strings.get(a).isEmpty()) {
                 subjectSchedules.add(SubjectSchedule.builder()
                         .semester(semester)
                         .dayOfWeek(DayOfWeek.of(j))

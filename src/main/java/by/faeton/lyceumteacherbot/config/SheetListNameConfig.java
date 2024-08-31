@@ -21,6 +21,7 @@ public record SheetListNameConfig(
         String baseIdList,
         String allStudents,
         String allTeachers,
-        String absenteeismType
+        String absenteeismType,
+        String logsList
 ) {
 }

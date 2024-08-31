@@ -8,6 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NumberSubject {
-   private String number;
-   private String subjectName;
+    private String number;
+    private String subjectName;
 }

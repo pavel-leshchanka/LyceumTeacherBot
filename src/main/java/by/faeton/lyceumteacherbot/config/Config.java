@@ -24,10 +24,11 @@ import java.util.List;
 @Configuration
 public class Config {
     private static final String APPLICATION_NAME = "LyceumTeacher";
+    public static final String GOOGLE_SHEETS_CLIENT_SECRET_JSON = "/google-sheets-client-secret.json";
 
     @Bean
     public Credential authorize() throws IOException, GeneralSecurityException {
-        InputStream in = Config.class.getResourceAsStream("/google-sheets-client-secret.json");
+        InputStream in = Config.class.getResourceAsStream(GOOGLE_SHEETS_CLIENT_SECRET_JSON);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JacksonFactory.getDefaultInstance(), new InputStreamReader(in));
         List<String> scopes = List.of(SheetsScopes.SPREADSHEETS);
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(GoogleNetHttpTransport.newTrustedTransport(),

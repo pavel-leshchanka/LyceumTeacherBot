@@ -50,27 +50,19 @@ public class UserRepository {
         return List.copyOf(usersList);
     }
 
-    private void refreshContext() {
+    public void refreshContext() {
         log.info("Called refresh context method");
         Optional<List<List<String>>> values = sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.baseIdList());
         usersList.clear();
-        if (values.isPresent()) {
-            for (List<String> value : values.get()) {
-                try {
-                    usersList.add(User.builder()
-                            .telegramUserId(Long.valueOf(value.get(0)))
-                            .userLastName(value.get(4))
-                            .userFirstName(value.get(5))
-                            .userFatherName(value.get(6))
-                            .sex(value.get(7))
-                            .userLevel(UserLevel.valueOf(value.get(8)))
-                            .subjectOfEducationId(value.get(9))
-                            .build());
-                } catch (IllegalArgumentException ignored) {
-                }
-            }
-        }
+        values.ifPresent(s -> s.forEach(value -> usersList.add(User.builder()
+                .telegramUserId(Long.valueOf(value.get(0)))
+                .userLastName(value.get(4))
+                .userFirstName(value.get(5))
+                .userFatherName(value.get(6))
+                .sex(value.get(7))
+                .userLevel(UserLevel.valueOf(value.get(8)))
+                .subjectOfEducationId(value.get(9))
+                .build()))
+        );
     }
-
-
 }

@@ -36,13 +36,9 @@ public class TypeAndValueOfAbsenteeismRepository {
     }
 
     @PostConstruct
-    private void setUp() {
+    public void refreshContext() {
         typeAndValueOfAbsenteeism.clear();
         Optional<List<List<String>>> absenteeism = sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.absenteeismType(), fieldsNameConfig.absenteeismType());
-        absenteeism.ifPresent(arrayLists -> {
-            for (List<String> arrayList : arrayLists) {
-                typeAndValueOfAbsenteeism.put(arrayList.get(0), arrayList.get(1));
-            }
-        });
+        absenteeism.ifPresent(arrayLists -> arrayLists.forEach(arrayList -> typeAndValueOfAbsenteeism.put(arrayList.get(0), arrayList.get(1))));
     }
 }

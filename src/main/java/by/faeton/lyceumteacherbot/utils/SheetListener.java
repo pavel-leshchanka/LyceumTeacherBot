@@ -2,13 +2,13 @@ package by.faeton.lyceumteacherbot.utils;
 
 
 import by.faeton.lyceumteacherbot.config.SheetConfig;
+import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
 import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,9 +20,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class SheetListener {
+    public static final String RAW = "RAW";
+    public static final String INSERT_ROWS = "INSERT_ROWS";
 
     private final SheetConfig sheetConfig;
     private final Sheets sheetsService;
+    private final SheetListNameConfig sheetListNameConfig;
 
     public Optional<List<List<String>>> getSheetList(String sheetId, String sheetListName, String fields) {
         String s = sheetListName + (fields.isEmpty() ? "" : "!") + fields;
@@ -57,7 +60,7 @@ public class SheetListener {
     public void writeSheet(String sheetId, List<ValueRange> data) {
         try {
             BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
-                    .setValueInputOption("RAW")
+                    .setValueInputOption(RAW)
                     .setData(data);
             sheetsService.spreadsheets()
                     .values()
@@ -72,12 +75,12 @@ public class SheetListener {
         ValueRange body = new ValueRange()
                 .setValues(content);
         try {
-            String s = "logs!A1";
+
             sheetsService.spreadsheets()
                     .values()
-                    .append(sheetConfig.sheetId(), s, body)
-                    .setValueInputOption("RAW")
-                    .setInsertDataOption("INSERT_ROWS")
+                    .append(sheetConfig.sheetId(), sheetListNameConfig.logsList(), body)
+                    .setValueInputOption(RAW)
+                    .setInsertDataOption(INSERT_ROWS)
                     .setIncludeValuesInResponse(true)
                     .execute();
         } catch (IOException e) {

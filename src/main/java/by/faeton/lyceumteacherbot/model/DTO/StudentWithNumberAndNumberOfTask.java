@@ -1,7 +1,6 @@
 package by.faeton.lyceumteacherbot.model.DTO;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

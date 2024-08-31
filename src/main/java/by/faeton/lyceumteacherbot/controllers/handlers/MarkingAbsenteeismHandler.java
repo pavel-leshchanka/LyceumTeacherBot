@@ -12,6 +12,7 @@ import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismReposito
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.JournalService;
+import by.faeton.lyceumteacherbot.utils.DefaultMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -29,20 +30,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static by.faeton.lyceumteacherbot.utils.CallbackQueryStatic.CANCEL_CALLBACK;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CANCEL;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CLASS_LETTER;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CLASS_PARALLEL;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CLASS_STUDENTS;
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.END_ABSENTEEISM;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.END_MARK_ABSENTEEISM;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AUTHORIZER;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NO_ACCESS;
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.START_ABSENTEEISM;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.START_MARK_ABSENTEEISM;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.STUDENT_NOT_FOUND_PLEASE_REPEATE;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.TYPE_OF_ABSENTEEISM;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.WRITING_IN_PROGRESS;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.WRITING_IS_COMPLETED;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.WRITING_IS_NOT_COMPLETED;
+import static by.faeton.lyceumteacherbot.utils.TelegramCommand.ABSENTEEISM_COMMAND;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class MarkingAbsenteeismHandler implements Handler {
+
 
     private final DialogAttributesService dialogAttributesService;
     private final SchoolConfig schoolConfig;
@@ -55,7 +63,7 @@ public class MarkingAbsenteeismHandler implements Handler {
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
         if (update.hasMessage()) {
-            if (update.getMessage().getText().equals("/absenteeism")) {
+            if (update.getMessage().getText().equals(ABSENTEEISM_COMMAND)) {
                 return true;
             }
         }
@@ -79,7 +87,7 @@ public class MarkingAbsenteeismHandler implements Handler {
                         if (user.getUserLevel().equals(UserLevel.TEACHER)) {
                             Set<String> classParallels = journalRepository.getClassParallels();
                             sendMessages.add(getKeyboard(chatId,
-                                    "Параллель",
+                                    CLASS_PARALLEL,
                                     classParallels
                             ));
                             dialogAttributesService.createDialog(DialogTypeStarted.REGISTER_ABSENTEEISM, chatId);
@@ -110,7 +118,7 @@ public class MarkingAbsenteeismHandler implements Handler {
                             dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                             Set<String> classLetters = journalRepository.getClassLetters();
                             sendMessages.add(getKeyboard(chatId,
-                                    "Буква класса",
+                                    CLASS_LETTER,
                                     classLetters
                             ));
                         }
@@ -139,12 +147,12 @@ public class MarkingAbsenteeismHandler implements Handler {
                                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                                 .build());
                                         sendMessages.add(getKeyboard(chatId,
-                                                START_ABSENTEEISM,
+                                                DefaultMessages.START_ABSENTEEISM,
                                                 getClassesNumbers(schoolConfig.firstLesson(), schoolConfig.lastLesson())));
                                     }, () -> {
                                         EditMessageText.builder()
                                                 .chatId(chatId)
-                                                .text("Ученик не найден, повторите попытку.")
+                                                .text(STUDENT_NOT_FOUND_PLEASE_REPEATE)
                                                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                                 .build();
                                         dialogAttributesService.deleteByTelegramId(chatId);
@@ -155,18 +163,18 @@ public class MarkingAbsenteeismHandler implements Handler {
                             dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                             sendMessages.add(EditMessageText.builder()
                                     .chatId(chatId)
-                                    .text("Начало пропуска: " + update.getCallbackQuery().getData())
+                                    .text(START_MARK_ABSENTEEISM + update.getCallbackQuery().getData())
                                     .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                     .build());
                             sendMessages.add(getKeyboard(chatId,
-                                    END_ABSENTEEISM,
+                                    DefaultMessages.END_ABSENTEEISM,
                                     getClassesNumbers(Integer.parseInt(update.getCallbackQuery().getData()), schoolConfig.lastLesson())));
                         }
                         case 4 -> {
                             dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                             sendMessages.add(EditMessageText.builder()
                                     .chatId(chatId)
-                                    .text("Конец пропуска: " + update.getCallbackQuery().getData())
+                                    .text(END_MARK_ABSENTEEISM + update.getCallbackQuery().getData())
                                     .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                     .build());
                             sendMessages.add(getKeyboard(chatId,
@@ -241,8 +249,8 @@ public class MarkingAbsenteeismHandler implements Handler {
         });
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
-                .text("Отмена")
-                .callbackData("Cancel")
+                .text(CANCEL)
+                .callbackData(CANCEL_CALLBACK)
                 .build());
         rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
@@ -270,8 +278,8 @@ public class MarkingAbsenteeismHandler implements Handler {
         }
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
-                .text("Отмена")
-                .callbackData("Cancel")
+                .text(CANCEL)
+                .callbackData(CANCEL_CALLBACK)
                 .build());
         rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
@@ -295,8 +303,8 @@ public class MarkingAbsenteeismHandler implements Handler {
         });
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
-                .text("Отмена")
-                .callbackData("Cancel")
+                .text(CANCEL)
+                .callbackData(CANCEL_CALLBACK)
                 .build());
         rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);
@@ -326,8 +334,8 @@ public class MarkingAbsenteeismHandler implements Handler {
         }
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
-                .text("Отмена")
-                .callbackData("Cancel")
+                .text(CANCEL)
+                .callbackData(CANCEL_CALLBACK)
                 .build());
         rowsInline.add(row);
         markupInline.setKeyboard(rowsInline);

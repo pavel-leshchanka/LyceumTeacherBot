@@ -33,6 +33,7 @@ sheet-config:
      allStudents: students
      allTeachers: teachers
      absenteeismType: absenteeismType
+     logsList: logs!A1
 school:
   currentAcademicYear: 2024
   firstLesson: 0

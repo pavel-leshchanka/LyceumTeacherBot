@@ -39,7 +39,7 @@ public class StudentsRepository {
     }
 
     @PostConstruct
-    private void setUp() {
+    public void refreshContext() {
         students.clear();
         students.addAll(sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.allStudents(), fieldsNameConfig.allStudents()).orElseThrow().stream()
                 .map(strings -> Student.builder()
@@ -50,7 +50,6 @@ public class StudentsRepository {
                         .sex(strings.get(4))
                         .build())
                 .collect(Collectors.toCollection(ArrayList::new)));
-
         sex.clear();
         students.forEach(student -> {
             String studentSex = student.getSex();

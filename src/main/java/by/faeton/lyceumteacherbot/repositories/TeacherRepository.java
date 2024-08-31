@@ -31,7 +31,7 @@ public class TeacherRepository {
     }
 
     @PostConstruct
-    private void setUp() {
+    public void refreshContext() {
         teachers.clear();
         teachers.addAll(sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.allTeachers(), fieldsNameConfig.allTeachers()).orElseThrow().stream()
                 .map(strings -> Teacher.builder()

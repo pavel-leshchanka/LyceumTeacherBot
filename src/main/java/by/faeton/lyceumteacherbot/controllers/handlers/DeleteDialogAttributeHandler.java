@@ -10,16 +10,20 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
+import static by.faeton.lyceumteacherbot.utils.CallbackQueryStatic.CANCEL_CALLBACK;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CANCELED;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DeleteDialogAttributeHandler implements Handler {
+
     private final DialogAttributesService dialogAttributesService;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
         if (update.hasCallbackQuery()) {
-            if (update.getCallbackQuery().getData().equals("Cancel")) {
+            if (update.getCallbackQuery().getData().equals(CANCEL_CALLBACK)) {
                 return dialogAttributesService.find(update.getCallbackQuery().getMessage().getChatId()).isPresent();
             }
         }
@@ -32,7 +36,7 @@ public class DeleteDialogAttributeHandler implements Handler {
         dialogAttributesService.deleteByTelegramId(chatId);
         return List.of(EditMessageText.builder()
                 .chatId(chatId)
-                .text("Отменено")
+                .text(CANCELED)
                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
                 .build());
     }
