@@ -18,7 +18,6 @@ public class DefaultMessages {
             /laboratory_notebook - Проверить наличие тетради для лабораторных работ.
             /test_notebook - Проверить наличие тетради для контрольных работ.
             /help - Получить помощь""";
-    public static final String AVAILABLE = "В наличии";
     public static final String NOT_AVAILABLE = "Нет в наличии";
     public static final String NOT_AUTHORIZER = "Вы не авторизированы";
     public static final String ANOTHER_MESSAGES = "Для начала работы выполни одну из возможных команд";

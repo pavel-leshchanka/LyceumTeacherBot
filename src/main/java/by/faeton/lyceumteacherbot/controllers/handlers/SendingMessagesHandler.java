@@ -11,12 +11,13 @@ import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -189,23 +190,24 @@ public class SendingMessagesHandler implements Handler {
     }
 
     private SendMessage getKeyboard(Long chatId, String text, Set<String> callbackData) {
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardRow> rowsInline = new ArrayList<>();
         for (String s : callbackData) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(InlineKeyboardButton.builder()
                     .text(s)
                     .callbackData(s)
                     .build());
-            rowsInline.add(row);
+            rowsInline.add(new InlineKeyboardRow(row));
         }
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
                 .text(CANCEL)
                 .callbackData(CANCEL_CALLBACK)
                 .build());
-        rowsInline.add(row);
-        markupInline.setKeyboard(rowsInline);
+        rowsInline.add(new InlineKeyboardRow(row));
+        InlineKeyboardMarkup markupInline = InlineKeyboardMarkup.builder()
+                .keyboard(rowsInline)
+                .build();
         return SendMessage.builder()
                 .chatId(chatId)
                 .replyMarkup(markupInline)

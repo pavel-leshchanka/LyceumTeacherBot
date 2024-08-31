@@ -12,12 +12,13 @@ import by.faeton.lyceumteacherbot.services.JournalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -76,12 +77,12 @@ public class ShowAbsenteeismHandler implements Handler {
 
     @Override
     public List<BotApiMethod> execute(Update update) {
-        List<BotApiMethod> sendMessages = new ArrayList<>();
+        List sendMessages = new ArrayList<>();
         if (update.hasMessage()) {
             Long chatId = update.getMessage().getChatId();
             if (update.getMessage().getText().equals(ABSENTEEISM_TEXT_COMMAND) && dialogAttributesService.find(chatId).isEmpty()) {
                 userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
-                            if (user.getUserLevel().ordinal()>=UserLevel.TEACHER.ordinal()) {
+                            if (user.getUserLevel().ordinal() >= UserLevel.TEACHER.ordinal()) {
                                 Set<String> classParallels = journalRepository.getClassParallels();
                                 sendMessages.add(getKeyboard(chatId,
                                         CLASS_PARALLEL,
@@ -146,23 +147,24 @@ public class ShowAbsenteeismHandler implements Handler {
     }
 
     private SendMessage getKeyboard(Long chatId, String text, Set<String> callbackData) {
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardRow> rowsInline = new ArrayList<>();
         for (String s : callbackData) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(InlineKeyboardButton.builder()
                     .text(s)
                     .callbackData(s)
                     .build());
-            rowsInline.add(row);
+            rowsInline.add(new InlineKeyboardRow(row));
         }
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
                 .text(CANCEL)
                 .callbackData(CANCEL_CALLBACK)
                 .build());
-        rowsInline.add(row);
-        markupInline.setKeyboard(rowsInline);
+        rowsInline.add(new InlineKeyboardRow(row));
+        InlineKeyboardMarkup markupInline = InlineKeyboardMarkup.builder()
+                .keyboard(rowsInline)
+                .build();
         return SendMessage.builder()
                 .chatId(chatId)
                 .replyMarkup(markupInline)
