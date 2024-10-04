@@ -12,5 +12,6 @@ import java.time.LocalDate;
 public class NumberDateSubject {
     private String number;
     private LocalDate date;
+    private String typeOfWork;
     private String subjectName;
 }

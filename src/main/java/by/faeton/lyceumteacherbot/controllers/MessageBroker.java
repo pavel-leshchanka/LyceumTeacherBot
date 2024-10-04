@@ -67,7 +67,7 @@ public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThr
                     .build());
             byTelegramId.ifPresentOrElse(byId -> Logger.log(telegramId, byId, text),
                     () -> Logger.log(telegramId, text));
-        } else if (collect.size() == 1 && collect.getFirst().isEmpty()) {
+        } else if (collect.size() == 1 && collect.get(0).isEmpty()) {
             sendUserMessage(SendMessage.builder()
                     .chatId(update.getMessage().getChatId())
                     .text(ANOTHER_MESSAGES)

@@ -7,6 +7,7 @@ import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.model.lyceum.Statement;
+import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.BotService;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
@@ -19,6 +20,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +42,8 @@ import static by.faeton.lyceumteacherbot.utils.TelegramCommand.START_COMMAND;
 @Component
 public class SimpleTextHandler implements Handler {
 
-
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
     private final JournalService journalService;
@@ -64,47 +67,47 @@ public class SimpleTextHandler implements Handler {
         Optional<User> optionalUser = userRepository.findByTelegramId(chatId);
         switch (message.getText()) {
             case START_COMMAND -> sendMessages.add(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(arrivedStart())
-                    .build());
+                .chatId(chatId)
+                .text(arrivedStart())
+                .build());
             case MARKS_COMMAND -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(arrivedMarks(user))
-                            .build()),
-                    () -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NOT_AUTHORIZER)
-                            .build()));
-            case QUARTER_COMMAND -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(arrivedQuarterMarks(user, Statement.FIRST_QUARTER))//todo
-                            .build()),
-                    () -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NOT_AUTHORIZER)
-                            .build()));
-            case REFRESH_COMMAND -> optionalUser.ifPresentOrElse(user -> {
-                        if (user.getUserLevel().equals(UserLevel.ADMIN)) {
-                            botService.refreshContext();
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(REFRESHED)
-                                    .build());
-                        } else {
-                            sendMessages.add(SendMessage.builder()
-                                    .chatId(chatId)
-                                    .text(NO_ACCESS)
-                                    .build());
-                        }
-                    },
-                    () -> sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NOT_AUTHORIZER)
-                            .build()));
-            case HELP_COMMAND -> sendMessages.add(SendMessage.builder()
                     .chatId(chatId)
-                    .text(arrivedHelp())
-                    .build());
+                    .text(arrivedMarks(user))
+                    .build()),
+                () -> sendMessages.add(SendMessage.builder()
+                    .chatId(chatId)
+                    .text(NOT_AUTHORIZER)
+                    .build()));
+            case QUARTER_COMMAND -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
+                    .chatId(chatId)
+                    .text(arrivedQuarterMarks(user, Statement.FIRST_QUARTER))//todo
+                    .build()),
+                () -> sendMessages.add(SendMessage.builder()
+                    .chatId(chatId)
+                    .text(NOT_AUTHORIZER)
+                    .build()));
+            case REFRESH_COMMAND -> optionalUser.ifPresentOrElse(user -> {
+                    if (user.getUserLevel().equals(UserLevel.ADMIN)) {
+                        botService.refreshContext();
+                        sendMessages.add(SendMessage.builder()
+                            .chatId(chatId)
+                            .text(REFRESHED)
+                            .build());
+                    } else {
+                        sendMessages.add(SendMessage.builder()
+                            .chatId(chatId)
+                            .text(NO_ACCESS)
+                            .build());
+                    }
+                },
+                () -> sendMessages.add(SendMessage.builder()
+                    .chatId(chatId)
+                    .text(NOT_AUTHORIZER)
+                    .build()));
+            case HELP_COMMAND -> sendMessages.add(SendMessage.builder()
+                .chatId(chatId)
+                .text(arrivedHelp())
+                .build());
         }
         return sendMessages;
     }
@@ -131,10 +134,17 @@ public class SimpleTextHandler implements Handler {
     private String linesToString(List<NumberDateSubject> numberDateSubjects) {
         StringBuilder stringBuilder = new StringBuilder();
         numberDateSubjects
-                .forEach(numberDateSubject -> stringBuilder.append(numberDateSubject.getDate())
-                        .append(numberDateSubject.getSubjectName())
-                        .append(numberDateSubject.getNumber())
-                        .append("\n"));
+            .stream()
+            .filter(n -> !typeAndValueOfAbsenteeismRepository.getAllTypeAndValueOfAbsenteeism().keySet().contains(n.getNumber()))
+            .forEach(numberDateSubject -> stringBuilder
+                .append(numberDateSubject.getDate().format(formatter))
+                .append(" ")
+                .append(numberDateSubject.getSubjectName())
+                .append(" ")
+                .append(numberDateSubject.getTypeOfWork())
+                .append(" ")
+                .append(numberDateSubject.getNumber())
+                .append("\n"));
         if (stringBuilder.isEmpty()) {
             stringBuilder.append(NOT_AVAILABLE);
         }
@@ -144,9 +154,9 @@ public class SimpleTextHandler implements Handler {
     private String linesToString1(List<NumberSubject> numberSubjects) {
         StringBuilder stringBuilder = new StringBuilder();
         numberSubjects
-                .forEach(numberDateSubject -> stringBuilder.append(numberDateSubject.getSubjectName())
-                        .append(numberDateSubject.getNumber())
-                        .append("\n"));
+            .forEach(numberDateSubject -> stringBuilder.append(numberDateSubject.getSubjectName())
+                .append(numberDateSubject.getNumber())
+                .append("\n"));
         if (stringBuilder.isEmpty()) {
             stringBuilder.append(NOT_AVAILABLE);
         }

@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Task {
     private Long id;
 
     private String taskId;
+    @NotNull
     private String themeName;
     private String homeWork;
     private LocalDate date;

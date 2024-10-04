@@ -1,6 +1,7 @@
 package by.faeton.lyceumteacherbot.services;
 
 import by.faeton.lyceumteacherbot.repositories.JournalRepository;
+import by.faeton.lyceumteacherbot.repositories.NumbersFromMyTable;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.TeacherRepository;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
@@ -16,6 +17,7 @@ public class BotService {
     private final TeacherRepository teacherRepository;
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
     private final UserRepository userRepository;
+    private final NumbersFromMyTable numbersFromMyTable;
 
     public void refreshContext() {
         userRepository.refreshContext();
@@ -23,5 +25,6 @@ public class BotService {
         teacherRepository.refreshContext();
         typeAndValueOfAbsenteeismRepository.refreshContext();
         journalRepository.refreshContext();
+        numbersFromMyTable.init();
     }
 }

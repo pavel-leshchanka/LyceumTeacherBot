@@ -31,9 +31,6 @@ public class SubjectNumber {
     @JoinColumn(name = "student_id")
     private Student student;
 
-    public SubjectNumber(String number, Student student) {
-    }
-
     public void setValueOfTask(String valueOfTask) {
         this.valueOfTask = valueOfTask;
         this.id = null;

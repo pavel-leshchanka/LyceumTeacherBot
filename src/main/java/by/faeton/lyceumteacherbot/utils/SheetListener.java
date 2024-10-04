@@ -9,6 +9,7 @@ import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -32,23 +33,26 @@ public class SheetListener {
         List<String> ranges = List.of(s);
         BatchGetValuesResponse readResult = null;
         try {
+            Thread.sleep(1000);
             readResult = sheetsService.spreadsheets()
-                    .values()
-                    .batchGet(sheetId)
-                    .setRanges(ranges)
-                    .execute();
+                .values()
+                .batchGet(sheetId)
+                .setRanges(ranges)
+                .execute();
         } catch (IOException e) {
+            throw new RuntimeException(e);//todo
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         List<ValueRange> valueRanges = readResult.getValueRanges();
         List<List<String>> list = null;
-        int size = valueRanges.getFirst().size();
+        int size = valueRanges.get(0).size();
         if (size > 2) {
-            list = new ArrayList<>(valueRanges.getFirst().getValues().stream()
-                    .map(lists -> lists.stream()
-                            .map(Object::toString)
-                            .toList())
-                    .toList());
+            list = new ArrayList<>(valueRanges.get(0).getValues().stream()
+                .map(lists -> lists.stream()
+                    .map(Object::toString)
+                    .toList())
+                .toList());
         }
         return Optional.ofNullable(list);
     }
@@ -57,32 +61,51 @@ public class SheetListener {
         return getSheetList(sheetId, sheetListName, "");
     }
 
+    @Async
     public void writeSheet(String sheetId, List<ValueRange> data) {
         try {
             BatchUpdateValuesRequest body = new BatchUpdateValuesRequest()
-                    .setValueInputOption(RAW)
-                    .setData(data);
+                .setValueInputOption(RAW)
+                .setData(data);
             sheetsService.spreadsheets()
-                    .values()
-                    .batchUpdate(sheetId, body)
-                    .execute();
+                .values()
+                .batchUpdate(sheetId, body)
+                .execute();
         } catch (IOException e) {
             log.warn(e + "data is not written");
         }
     }
 
+    @Async
     public void writeLog(List<List<Object>> content) {
         ValueRange body = new ValueRange()
-                .setValues(content);
+            .setValues(content);
+        try {
+            sheetsService.spreadsheets()
+                .values()
+                .append(sheetConfig.sheetId(), sheetListNameConfig.logsList(), body)
+                .setValueInputOption(RAW)
+                .setInsertDataOption(INSERT_ROWS)
+                .setIncludeValuesInResponse(true)
+                .execute();
+        } catch (IOException e) {
+            log.warn(e + "data is not written");
+        }
+    }
+
+    @Async
+    public void writeNewUser(List<List<Object>> content) {
+        ValueRange body = new ValueRange()
+            .setValues(content);
         try {
 
             sheetsService.spreadsheets()
-                    .values()
-                    .append(sheetConfig.sheetId(), sheetListNameConfig.logsList(), body)
-                    .setValueInputOption(RAW)
-                    .setInsertDataOption(INSERT_ROWS)
-                    .setIncludeValuesInResponse(true)
-                    .execute();
+                .values()
+                .append(sheetConfig.sheetId(), "newUser", body)
+                .setValueInputOption(RAW)
+                .setInsertDataOption(INSERT_ROWS)
+                .setIncludeValuesInResponse(true)
+                .execute();
         } catch (IOException e) {
             log.warn(e + "data is not written");
         }

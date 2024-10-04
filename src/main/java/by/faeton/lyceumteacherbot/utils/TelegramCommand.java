@@ -9,4 +9,5 @@ public class TelegramCommand {
     public static final String HELP_COMMAND = "/help";
     public static final String START_COMMAND = "/start";
     public static final String REFRESH_COMMAND = "/refresh";
+    public static final String REGISTER_COMMAND = "/register";
 }

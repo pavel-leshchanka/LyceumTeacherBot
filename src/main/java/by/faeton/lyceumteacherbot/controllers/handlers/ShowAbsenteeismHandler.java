@@ -180,7 +180,7 @@ public class ShowAbsenteeismHandler implements Handler {
         String s = classParallel + classLetter;
         if (!collect.isEmpty()) {
             for (List<StudentWithNumberAndNumberOfTask> studentWithNumberAndNumberOfTasks : collect.values()) {
-                s += "\n" + studentWithNumberAndNumberOfTasks.getFirst().getStudentName() + " ";
+                s += "\n" + studentWithNumberAndNumberOfTasks.get(0).getStudentName() + " ";
                 studentWithNumberAndNumberOfTasks.sort(Comparator.comparing(StudentWithNumberAndNumberOfTask::getNumberOfTask));
                 String s1 = studentWithNumberAndNumberOfTasks.get(0).getNumber();
                 int start = studentWithNumberAndNumberOfTasks.get(0).getNumberOfTask();
@@ -197,7 +197,7 @@ public class ShowAbsenteeismHandler implements Handler {
                         current++;
                     }
                 }
-                s += generateTextAbsenteeismLine(start, studentWithNumberAndNumberOfTasks.getLast().getNumberOfTask(), s1);
+                s += generateTextAbsenteeismLine(start, studentWithNumberAndNumberOfTasks.get(studentWithNumberAndNumberOfTasks.size() - 1).getNumberOfTask(), s1);
             }
         } else {
             s += "\n" + ABSENTEEISM_NOT_FOUND;

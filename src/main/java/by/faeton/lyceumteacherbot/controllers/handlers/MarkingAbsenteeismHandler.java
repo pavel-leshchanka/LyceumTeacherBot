@@ -4,8 +4,11 @@ import by.faeton.lyceumteacherbot.config.SchoolConfig;
 import by.faeton.lyceumteacherbot.model.DTO.NumberDateNumberOfSubject;
 import by.faeton.lyceumteacherbot.model.DialogAttribute;
 import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
+import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
+import by.faeton.lyceumteacherbot.model.lyceum.Journal;
 import by.faeton.lyceumteacherbot.model.lyceum.Student;
+import by.faeton.lyceumteacherbot.model.lyceum.Teacher;
 import by.faeton.lyceumteacherbot.repositories.JournalRepository;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
@@ -143,7 +146,7 @@ public class MarkingAbsenteeismHandler implements Handler {
                         studentsRepository.findByStudentId(update.getCallbackQuery().getData()).ifPresentOrElse(student -> {
                                     sendMessages.add(EditMessageText.builder()
                                             .chatId(chatId)
-                                            .text(student.getUserLastName())
+                                            .text(student.getUserLastName() + " " + student.getUserFirstName())
                                             .messageId(update.getCallbackQuery().getMessage().getMessageId())
                                             .build());
                                     sendMessages.add(getKeyboard(chatId,
@@ -203,6 +206,26 @@ public class MarkingAbsenteeismHandler implements Handler {
                                     .text(WRITING_IS_NOT_COMPLETED)
                                     .build());
                         }
+
+                        List<String> receivedData = dialogAttribute.getReceivedData();
+                        String classParallel = receivedData.get(0);
+                        String classLetter = receivedData.get(1);
+                        Optional<Journal> byClassLetterAndClassParallelAndYear = journalRepository.findByClassLetterAndClassParallelAndYear(classLetter, classParallel, schoolConfig.currentAcademicYear());
+                        if (byClassLetterAndClassParallelAndYear.isPresent()) {
+                            Journal journal = byClassLetterAndClassParallelAndYear.get();
+                            Teacher classroomTeacher = journal.getClassroomTeacher();
+                            String teacherId = classroomTeacher.getTeacherId();
+                            User user = userRepository.findBySubjectOfEducationId(teacherId).get(0);
+                            String studentId = receivedData.get(2);
+                            Optional<Student> optionalStudent = studentsRepository.findByStudentId(studentId);
+                            if (chatId != user.getTelegramUserId()) {
+                                sendMessages.add(SendMessage.builder()
+                                        .chatId(user.getTelegramUserId())
+                                        .text(classroomTeacher.getName() + " внес новый пропуск в ваш класс у ученика: " + optionalStudent.get().getUserLastName())
+                                        .build());
+                            }
+                        }
+
                         dialogAttributesService.deleteByTelegramId(chatId);
                     }
                 }
@@ -296,7 +319,7 @@ public class MarkingAbsenteeismHandler implements Handler {
         students.forEach(student -> {
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(InlineKeyboardButton.builder()
-                    .text(student.getUserLastName())
+                    .text(student.getUserLastName() + " " + student.getUserFirstName())
                     .callbackData(student.getStudentId())
                     .build());
             rowsInline.add(new InlineKeyboardRow(row));

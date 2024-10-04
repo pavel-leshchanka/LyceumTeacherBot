@@ -144,36 +144,40 @@ public class JournalRepository {
             List<List<String>> tasks = sheetListener.getSheetList(sheetId, sheetListNameConfig.tasks(), fieldsNameConfig.tasks()).orElseThrow();
 
             for (int i = 3; i < tasks.get(0).size() - 1; i++) {
-                String subject = tasks.get(4).get(i);
-                Optional<Subject> first = subjects.stream()
-                        .filter(s -> s.getName().equals(subject))
-                        .findFirst();
-                if (first.isPresent()) {
-                    Task task = Task.builder()
-                            .taskId(CellAddressGenerator.convertNumberColumnToLetter(i + 1))
-                            .date(LocalDate.of(
-                                    Integer.parseInt(tasks.get(2).get(i)),
-                                    Integer.parseInt(tasks.get(1).get(i)),
-                                    Integer.parseInt(tasks.get(0).get(i))
-                            ))
-                            .themeName(tasks.get(5).get(i))
-                            .homeWork(tasks.get(6).get(i))
-                            .subjectNumbers(new ArrayList<>())
-                            .taskNumber(Integer.valueOf(tasks.get(3).get(i)))
-                            .build();
-                    first.get().getTasks().add(task);
-                    for (int j = 7; j < tasks.size() - 1; j++) {
-                        Optional<Student> byStudentId = studentsRepository.findByStudentId(tasks.get(j).get(1));
-                        String value = tasks.get(j).get(i);
-                        if (byStudentId.isPresent() && !value.isEmpty()) {
-                            SubjectNumber subjectNumber1 = SubjectNumber.builder()
-                                    .id((long) (j + 1))
-                                    .valueOfTask(value)
-                                    .student(byStudentId.get())
-                                    .build();
-                            task.getSubjectNumbers().add(subjectNumber1);
+                try {
+                    String subject = tasks.get(4).get(i);
+                    Optional<Subject> first = subjects.stream()
+                            .filter(s -> s.getName().equals(subject))
+                            .findFirst();
+                    if (first.isPresent()) {
+                        Task task = Task.builder()
+                                .taskId(CellAddressGenerator.convertNumberColumnToLetter(i + 1))
+                                .date(LocalDate.of(
+                                        Integer.parseInt(tasks.get(2).get(i)),
+                                        Integer.parseInt(tasks.get(1).get(i)),
+                                        Integer.parseInt(tasks.get(0).get(i))
+                                ))
+                                .themeName(tasks.get(5).get(i))
+                                .homeWork(tasks.get(6).get(i))
+                                .subjectNumbers(new ArrayList<>())
+                                .taskNumber(Integer.valueOf(tasks.get(3).get(i)))
+                                .build();
+                        first.get().getTasks().add(task);
+                        for (int j = 7; j < tasks.size() - 1; j++) {
+                            Optional<Student> byStudentId = studentsRepository.findByStudentId(tasks.get(j).get(1));
+                            String value = tasks.get(j).get(i);
+                            if (byStudentId.isPresent() && !value.isEmpty()) {
+                                SubjectNumber subjectNumber1 = SubjectNumber.builder()
+                                        .id((long) (j + 1))
+                                        .valueOfTask(value)
+                                        .student(byStudentId.get())
+                                        .build();
+                                task.getSubjectNumbers().add(subjectNumber1);
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    System.out.println("Problem: " + e);
                 }
             }
 
