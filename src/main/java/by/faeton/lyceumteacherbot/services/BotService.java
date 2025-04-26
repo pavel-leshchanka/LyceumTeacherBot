@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.services;
 
 import by.faeton.lyceumteacherbot.repositories.JournalRepository;
-import by.faeton.lyceumteacherbot.repositories.NumbersFromMyTable;
+import by.faeton.lyceumteacherbot.utils.NumbersFromMyTable;
 import by.faeton.lyceumteacherbot.repositories.StudentsRepository;
 import by.faeton.lyceumteacherbot.repositories.TeacherRepository;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;

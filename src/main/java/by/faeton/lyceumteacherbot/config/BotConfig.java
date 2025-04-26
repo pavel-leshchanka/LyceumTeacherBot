@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @ConfigurationProperties(prefix = "bot")
 public record BotConfig(
-        String botName,
-        String botToken,
-        String tokensFolder,
-        String credentialsFilePath,
-        Integer port
+    Integer port,
+    String botName,
+    String botToken,
+    String credentialsFilePath,
+    String tokensFolder
 ) {
 }

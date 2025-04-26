@@ -2,14 +2,10 @@ package by.faeton.lyceumteacherbot.controllers.handlers;
 
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
 import by.faeton.lyceumteacherbot.model.DTO.NumberDateSubject;
-import by.faeton.lyceumteacherbot.model.DTO.NumberSubject;
-import by.faeton.lyceumteacherbot.model.DialogAttribute;
+import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.model.User;
-import by.faeton.lyceumteacherbot.model.UserLevel;
-import by.faeton.lyceumteacherbot.model.lyceum.Statement;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
-import by.faeton.lyceumteacherbot.services.BotService;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.JournalService;
 import lombok.RequiredArgsConstructor;
@@ -24,37 +20,38 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.HELP;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AUTHORIZER;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NO_ACCESS;
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.REFRESHED;
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.START;
-import static by.faeton.lyceumteacherbot.utils.TelegramCommand.HELP_COMMAND;
 import static by.faeton.lyceumteacherbot.utils.TelegramCommand.MARKS_COMMAND;
-import static by.faeton.lyceumteacherbot.utils.TelegramCommand.QUARTER_COMMAND;
-import static by.faeton.lyceumteacherbot.utils.TelegramCommand.REFRESH_COMMAND;
-import static by.faeton.lyceumteacherbot.utils.TelegramCommand.START_COMMAND;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class SimpleTextHandler implements Handler {
+public class MarksHandler implements Handler {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
     private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
     private final JournalService journalService;
-    private final BotService botService;
     private final SchoolConfig schoolConfig;
 
     @Override
     public boolean isAppropriateTypeMessage(Update update) {
         if (update.hasMessage()) {
-            Optional<DialogAttribute> byId = dialogAttributesService.find(update.getMessage().getChatId());
-            return update.getMessage().hasText() && byId.isEmpty();
+            Boolean b = dialogAttributesService
+                .find(getChatId(update))
+                .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.MARKS))
+                .orElse(false);
+            return b || update.getMessage().getText().equals(MARKS_COMMAND);
+        }
+        if (update.hasCallbackQuery()) {
+            return dialogAttributesService
+                .find(getChatId(update))
+                .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.MARKS))
+                .orElse(false);
         }
         return false;
     }
@@ -66,10 +63,6 @@ public class SimpleTextHandler implements Handler {
         Long chatId = message.getChatId();
         Optional<User> optionalUser = userRepository.findByTelegramId(chatId);
         switch (message.getText()) {
-            case START_COMMAND -> sendMessages.add(SendMessage.builder()
-                .chatId(chatId)
-                .text(arrivedStart())
-                .build());
             case MARKS_COMMAND -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
                     .chatId(chatId)
                     .text(arrivedMarks(user))
@@ -78,58 +71,15 @@ public class SimpleTextHandler implements Handler {
                     .chatId(chatId)
                     .text(NOT_AUTHORIZER)
                     .build()));
-            case QUARTER_COMMAND -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(arrivedQuarterMarks(user, Statement.FIRST_QUARTER))//todo
-                    .build()),
-                () -> sendMessages.add(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(NOT_AUTHORIZER)
-                    .build()));
-            case REFRESH_COMMAND -> optionalUser.ifPresentOrElse(user -> {
-                    if (user.getUserLevel().equals(UserLevel.ADMIN)) {
-                        botService.refreshContext();
-                        sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(REFRESHED)
-                            .build());
-                    } else {
-                        sendMessages.add(SendMessage.builder()
-                            .chatId(chatId)
-                            .text(NO_ACCESS)
-                            .build());
-                    }
-                },
-                () -> sendMessages.add(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(NOT_AUTHORIZER)
-                    .build()));
-            case HELP_COMMAND -> sendMessages.add(SendMessage.builder()
-                .chatId(chatId)
-                .text(arrivedHelp())
-                .build());
+
         }
         return sendMessages;
-    }
-
-    private String arrivedStart() {
-        return START;
     }
 
     private String arrivedMarks(User user) {
         List<NumberDateSubject> numbers = journalService.getNumbers(user.getSubjectOfEducationId(), schoolConfig.currentAcademicYear());
         return linesToString(numbers);
     }
-
-    private String arrivedQuarterMarks(User user, Statement statement) {
-        List<NumberSubject> numbers = journalService.getStatementNumbers(user.getSubjectOfEducationId(), schoolConfig.currentAcademicYear(), statement);
-        return linesToString1(numbers);
-    }
-
-    private String arrivedHelp() {
-        return HELP;
-    }
-
 
     private String linesToString(List<NumberDateSubject> numberDateSubjects) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -147,19 +97,17 @@ public class SimpleTextHandler implements Handler {
                 .append("\n"));
         if (stringBuilder.isEmpty()) {
             stringBuilder.append(NOT_AVAILABLE);
+        } else {
+            OptionalDouble average = numberDateSubjects.stream()
+                .map(NumberDateSubject::getNumber)
+                .filter(number -> number.matches("\\d+"))
+                .mapToDouble(Double::parseDouble)
+                .average();
+            stringBuilder.append("Среднее: ");
+            stringBuilder.append(average.orElseGet(() -> 0.0));
         }
         return stringBuilder.toString();
     }
 
-    private String linesToString1(List<NumberSubject> numberSubjects) {
-        StringBuilder stringBuilder = new StringBuilder();
-        numberSubjects
-            .forEach(numberDateSubject -> stringBuilder.append(numberDateSubject.getSubjectName())
-                .append(numberDateSubject.getNumber())
-                .append("\n"));
-        if (stringBuilder.isEmpty()) {
-            stringBuilder.append(NOT_AVAILABLE);
-        }
-        return stringBuilder.toString();
-    }
+
 }

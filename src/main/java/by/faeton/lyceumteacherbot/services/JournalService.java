@@ -35,8 +35,8 @@ public class JournalService {
                     .forEach(subjectNumber -> {
                         if (subjectNumber.getStudent().getStudentId().equals(studentId)) {
                             SchoolYearSchedule schoolYearSchedule = journal.getSchoolYearSchedule();
-                            LocalDate secondQuarterStart = schoolYearSchedule.getSecondQuarterStart();
-                            LocalDate secondQuarterEnd = schoolYearSchedule.getSecondQuarterEnd();
+                            LocalDate secondQuarterStart = schoolYearSchedule.getFourQuarterStart();
+                            LocalDate secondQuarterEnd = schoolYearSchedule.getFourQuarterEnd();
                             if ((task.getDate().isAfter(secondQuarterStart) && task.getDate().isBefore(secondQuarterEnd)) || task.getDate().equals(secondQuarterStart) || task.getDate().equals(secondQuarterEnd)) {//todo
                                 numberDateSubjects.add(new NumberDateSubject(subjectNumber.getValueOfTask(), task.getDate(), task.getThemeName(), subject.getName()));
                             }

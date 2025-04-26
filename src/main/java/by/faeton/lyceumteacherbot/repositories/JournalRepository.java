@@ -293,7 +293,7 @@ public class JournalRepository {
         if (month > 8) {
             columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month - 9)) + task.getTaskNumber() + 3;
         } else {
-            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month + 4)) + task.getTaskNumber() + 3;
+            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month + 3)) + task.getTaskNumber() + 3;
         }
         return columnNumber;
     }

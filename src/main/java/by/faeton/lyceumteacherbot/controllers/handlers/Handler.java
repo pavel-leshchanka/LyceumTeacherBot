@@ -9,4 +9,19 @@ public interface Handler {
     List<BotApiMethod> execute(Update update);
 
     boolean isAppropriateTypeMessage(Update update);
+
+    default Long getChatId(Update update) {
+        Long id;
+        if (update.hasMessage()) {
+            id = update.getMessage()
+                .getChatId();
+        } else if (update.hasCallbackQuery()) {
+            id = update.getCallbackQuery()
+                .getMessage()
+                .getChatId();
+        } else {
+            throw new RuntimeException();
+        }
+        return id;
+    }
 }

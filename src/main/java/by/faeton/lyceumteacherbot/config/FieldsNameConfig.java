@@ -5,15 +5,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "sheet-config.fields-name")
 public record FieldsNameConfig(
-        String journals,
-        String students,
-        String subjects,
-        String schedule,
-        String yearSchedule,
-        String tasks,
-        String consolidateStatement,
-        String allStudents,
-        String allTeachers,
-        String absenteeismType
+    String absenteeismType,
+    String allStudents,
+    String allTeachers,
+    String consolidateStatement,
+    String journals,
+    String schedule,
+    String students,
+    String subjects,
+    String tasks,
+    String yearSchedule
 ) {
 }

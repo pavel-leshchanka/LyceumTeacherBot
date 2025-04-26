@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static by.faeton.lyceumteacherbot.utils.CallbackQueryStatic.CANCEL_CALLBACK;
+import static by.faeton.lyceumteacherbot.controllers.MessageBroker.CANCEL_CALLBACK;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.ABSENTEEISM_NOT_FOUND;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CANCEL;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CLASS_LETTER;
@@ -58,19 +58,16 @@ public class ShowAbsenteeismHandler implements Handler {
     public boolean isAppropriateTypeMessage(Update update) {
         if (update.hasMessage()) {
             Boolean b = dialogAttributesService
-                    .find(update.getMessage()
-                            .getChatId())
-                    .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.SHOW_ABSENTEEISM))
-                    .orElse(false);
+                .find(getChatId(update))
+                .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.SHOW_ABSENTEEISM))
+                .orElse(false);
             return b || update.getMessage().getText().equals(ABSENTEEISM_TEXT_COMMAND);
         }
         if (update.hasCallbackQuery()) {
             return dialogAttributesService
-                    .find(update.getCallbackQuery()
-                            .getMessage()
-                            .getChatId())
-                    .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.SHOW_ABSENTEEISM))
-                    .orElse(false);
+                .find(getChatId(update))
+                .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.SHOW_ABSENTEEISM))
+                .orElse(false);
         }
         return false;
     }
@@ -82,24 +79,24 @@ public class ShowAbsenteeismHandler implements Handler {
             Long chatId = update.getMessage().getChatId();
             if (update.getMessage().getText().equals(ABSENTEEISM_TEXT_COMMAND) && dialogAttributesService.find(chatId).isEmpty()) {
                 userRepository.findByTelegramId(chatId).ifPresentOrElse(user -> {
-                            if (user.getUserLevel().ordinal() >= UserLevel.TEACHER.ordinal()) {
-                                Set<String> classParallels = journalRepository.getClassParallels();
-                                sendMessages.add(getKeyboard(chatId,
-                                        CLASS_PARALLEL,
-                                        classParallels
-                                ));
-                                dialogAttributesService.createDialog(DialogTypeStarted.SHOW_ABSENTEEISM, chatId);
-                            } else {
-                                sendMessages.add(SendMessage.builder()
-                                        .chatId(chatId)
-                                        .text(NO_ACCESS)
-                                        .build());
-                            }
-                        },
-                        () -> sendMessages.add(SendMessage.builder()
+                        if (user.getUserLevel().ordinal() >= UserLevel.TEACHER.ordinal()) {
+                            Set<String> classParallels = journalRepository.getClassParallels();
+                            sendMessages.add(getKeyboard(chatId,
+                                CLASS_PARALLEL,
+                                classParallels
+                            ));
+                            dialogAttributesService.createDialog(DialogTypeStarted.SHOW_ABSENTEEISM, chatId);
+                        } else {
+                            sendMessages.add(SendMessage.builder()
                                 .chatId(chatId)
-                                .text(NOT_AUTHORIZER)
-                                .build()));
+                                .text(NO_ACCESS)
+                                .build());
+                        }
+                    },
+                    () -> sendMessages.add(SendMessage.builder()
+                        .chatId(chatId)
+                        .text(NOT_AUTHORIZER)
+                        .build()));
             }
         }
 
@@ -110,23 +107,23 @@ public class ShowAbsenteeismHandler implements Handler {
                 switch (dialogAttribute.getStepOfDialog()) {
                     case 0 -> {
                         sendMessages.add(EditMessageText.builder()
-                                .chatId(chatId)
-                                .text(update.getCallbackQuery().getData())
-                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                                .build());
+                            .chatId(chatId)
+                            .text(update.getCallbackQuery().getData())
+                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                            .build());
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
                         Set<String> classLetters = journalRepository.getClassLetters();
                         sendMessages.add(getKeyboard(chatId,
-                                CLASS_LETTER,
-                                classLetters
+                            CLASS_LETTER,
+                            classLetters
                         ));
                     }
                     case 1 -> {
                         sendMessages.add(EditMessageText.builder()
-                                .chatId(chatId)
-                                .text(update.getCallbackQuery().getData())
-                                .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                                .build());
+                            .chatId(chatId)
+                            .text(update.getCallbackQuery().getData())
+                            .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                            .build());
 
                         dialogAttributesService.nextStep(dialogAttribute, update.getCallbackQuery().getData());
 
@@ -134,9 +131,9 @@ public class ShowAbsenteeismHandler implements Handler {
                         String classLetter = dialogAttribute.getReceivedData().get(1);
 
                         sendMessages.add(SendMessage.builder()
-                                .chatId(chatId)
-                                .text(getTextOfAbsenteeismOnCurrentDate(LocalDate.now(), classLetter, classParallel))
-                                .build());
+                            .chatId(chatId)
+                            .text(getTextOfAbsenteeismOnCurrentDate(LocalDate.now(), classLetter, classParallel))
+                            .build());
                         dialogAttributesService.deleteByTelegramId(chatId);
 
                     }
@@ -151,32 +148,32 @@ public class ShowAbsenteeismHandler implements Handler {
         for (String s : callbackData) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(InlineKeyboardButton.builder()
-                    .text(s)
-                    .callbackData(s)
-                    .build());
+                .text(s)
+                .callbackData(s)
+                .build());
             rowsInline.add(new InlineKeyboardRow(row));
         }
         List<InlineKeyboardButton> row = new ArrayList<>();
         row.add(InlineKeyboardButton.builder()
-                .text(CANCEL)
-                .callbackData(CANCEL_CALLBACK)
-                .build());
+            .text(CANCEL)
+            .callbackData(CANCEL_CALLBACK)
+            .build());
         rowsInline.add(new InlineKeyboardRow(row));
         InlineKeyboardMarkup markupInline = InlineKeyboardMarkup.builder()
-                .keyboard(rowsInline)
-                .build();
+            .keyboard(rowsInline)
+            .build();
         return SendMessage.builder()
-                .chatId(chatId)
-                .replyMarkup(markupInline)
-                .text(text)
-                .build();
+            .chatId(chatId)
+            .replyMarkup(markupInline)
+            .text(text)
+            .build();
     }
 
 
     private String getTextOfAbsenteeismOnCurrentDate(LocalDate localDate, String classLetter, String classParallel) {
         List<StudentWithNumberAndNumberOfTask> studentsAbsenteeism = journalService.getStudentsAbsenteeism(localDate, classLetter, classParallel, schoolConfig.currentAcademicYear());
         Map<String, List<StudentWithNumberAndNumberOfTask>> collect = studentsAbsenteeism.stream()
-                .collect(Collectors.groupingBy(StudentWithNumberAndNumberOfTask::getStudentName, Collectors.toList()));
+            .collect(Collectors.groupingBy(StudentWithNumberAndNumberOfTask::getStudentName, Collectors.toList()));
         String s = classParallel + classLetter;
         if (!collect.isEmpty()) {
             for (List<StudentWithNumberAndNumberOfTask> studentWithNumberAndNumberOfTasks : collect.values()) {
