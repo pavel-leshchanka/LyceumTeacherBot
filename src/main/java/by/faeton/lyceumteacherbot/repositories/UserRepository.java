@@ -3,7 +3,7 @@ package by.faeton.lyceumteacherbot.repositories;
 
 import by.faeton.lyceumteacherbot.config.SheetConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
-import by.faeton.lyceumteacherbot.model.DTO.UserRegisterDTO;
+import by.faeton.lyceumteacherbot.controllers.handlers.DTO.RegisterDTO;
 import by.faeton.lyceumteacherbot.model.User;
 import by.faeton.lyceumteacherbot.model.UserLevel;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
@@ -46,12 +46,12 @@ public class UserRepository {
                 .toList();
     }
 
-    public void registerNewUser(UserRegisterDTO user) {
+    public void registerNewUser(RegisterDTO user, Long id) {
         sheetListener.writeNewUser(List.of(List.of(
                 user.getUserLastName(),
                 user.getUserFirstName(),
                 user.getUserFatherName(),
-                user.getTelegramUserId(),
+                id,
                 user.getSex(),
                 user.getClassName(),
                 user.getUserLevel())));

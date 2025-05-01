@@ -1,10 +1,6 @@
 package by.faeton.lyceumteacherbot.model.lyceum;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +14,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SchoolYearSchedule {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "id", nullable = false)
+    //  @Id
+    //  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    //  @Column(name = "id", nullable = false)
     private Long id;
 
     private LocalDate firstQuarterStart;

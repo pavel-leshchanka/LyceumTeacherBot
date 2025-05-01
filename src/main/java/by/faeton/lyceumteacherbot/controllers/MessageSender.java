@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Component
 @RequiredArgsConstructor
 public class MessageSender {
-
     public static final String USER_MESSAGE_ARRIVED = "User {} message arrived.";
     public static final String USER_MESSAGE_NOT_ARRIVED = "User {} message not arrived.";
     private final TelegramClient telegramClient;
@@ -28,6 +27,7 @@ public class MessageSender {
                 log.info(USER_MESSAGE_ARRIVED, messageText.getChatId());
             }
         } catch (TelegramApiException e) {
+            log.error("", e);
             if (sendMessage instanceof SendMessage message) {
                 log.warn(USER_MESSAGE_NOT_ARRIVED, message.getChatId());
             }

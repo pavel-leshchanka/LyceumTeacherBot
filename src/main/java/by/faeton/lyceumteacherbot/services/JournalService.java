@@ -27,7 +27,7 @@ public class JournalService {
     private final JournalRepository journalRepository;
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
 
-    public List<NumberDateSubject> getNumbers(String studentId, Integer year) {
+    public List<NumberDateSubject> getNumbers(String studentId, Integer year, Statement statement) {
         List<NumberDateSubject> numberDateSubjects = new ArrayList<>();
         journalRepository.findByStudentIdAndYear(studentId, year).ifPresent(journal -> journal.getSubjects()
             .forEach(subject -> subject.getTasks()
@@ -35,8 +35,20 @@ public class JournalService {
                     .forEach(subjectNumber -> {
                         if (subjectNumber.getStudent().getStudentId().equals(studentId)) {
                             SchoolYearSchedule schoolYearSchedule = journal.getSchoolYearSchedule();
-                            LocalDate secondQuarterStart = schoolYearSchedule.getFourQuarterStart();
-                            LocalDate secondQuarterEnd = schoolYearSchedule.getFourQuarterEnd();
+                            LocalDate secondQuarterStart = switch (statement) {
+                                case FIRST_QUARTER -> schoolYearSchedule.getFirstQuarterStart();
+                                case SECOND_QUARTER -> schoolYearSchedule.getSecondQuarterStart();
+                                case THREE_QUARTER -> schoolYearSchedule.getThreeQuarterStart();
+                                case FOUR_QUARTER -> schoolYearSchedule.getFourQuarterStart();
+                                default -> throw new IllegalStateException("Unexpected text: " + statement);
+                            };
+                            LocalDate secondQuarterEnd = switch (statement) {
+                                case FIRST_QUARTER -> schoolYearSchedule.getFirstQuarterEnd();
+                                case SECOND_QUARTER -> schoolYearSchedule.getSecondQuarterEnd();
+                                case THREE_QUARTER -> schoolYearSchedule.getThreeQuarterEnd();
+                                case FOUR_QUARTER -> schoolYearSchedule.getFourQuarterEnd();
+                                default -> throw new IllegalStateException("Unexpected text: " + statement);
+                            };
                             if ((task.getDate().isAfter(secondQuarterStart) && task.getDate().isBefore(secondQuarterEnd)) || task.getDate().equals(secondQuarterStart) || task.getDate().equals(secondQuarterEnd)) {//todo
                                 numberDateSubjects.add(new NumberDateSubject(subjectNumber.getValueOfTask(), task.getDate(), task.getThemeName(), subject.getName()));
                             }

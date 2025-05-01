@@ -11,25 +11,25 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
-import static by.faeton.lyceumteacherbot.utils.DefaultMessages.HELP;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.START;
 
 @Slf4j
 @Component
-public class HelpHandler extends Handler {
-    public HelpHandler(DialogAttributesService dialogAttributesService) {
+public class StartHandler extends Handler {
+    public StartHandler(DialogAttributesService dialogAttributesService) {
         super(dialogAttributesService);
     }
 
     @Override
     DialogType getType() {
-        return DialogType.HELP;
+        return DialogType.START;
     }
 
     @Override
     public List<BotApiMethod> execute(Update update) {
         return List.of(SendMessage.builder()
             .chatId(UpdateUtil.getChatId(update))
-            .text(HELP)
+            .text(START)
             .build());
     }
 }

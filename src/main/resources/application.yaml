@@ -1,3 +1,6 @@
+spring:
+  profiles:
+    active: prod
 bot:
   botName: name
   botToken: token
@@ -41,20 +44,3 @@ school:
   currentAcademicYear: 2024
   firstLesson: 0
   lastLesson: 7
-spring:
-  profiles:
-    active: prod
-  datasource:
-    url: jdbc:h2:mem:mydb
-    username: sa
-    password: password
-    driverClassName: org.h2.Driver
-    h2:
-      console:
-        enabled: true
-  jpa:
-    hibernate:
-      ddl-auto: create
-    generate-ddl: true
-    show-sql: true
-    database-platform: org.hibernate.dialect.H2Dialect

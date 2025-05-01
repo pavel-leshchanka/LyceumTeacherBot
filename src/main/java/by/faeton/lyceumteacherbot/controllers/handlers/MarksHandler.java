@@ -1,83 +1,103 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
+import by.faeton.lyceumteacherbot.controllers.DialogType;
+import by.faeton.lyceumteacherbot.controllers.handlers.DTO.MarksDTO;
 import by.faeton.lyceumteacherbot.model.DTO.NumberDateSubject;
-import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
 import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.model.lyceum.Statement;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.repositories.UserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.services.JournalService;
-import lombok.RequiredArgsConstructor;
+import by.faeton.lyceumteacherbot.utils.KeyboardUtil;
+import by.faeton.lyceumteacherbot.utils.Pair;
+import by.faeton.lyceumteacherbot.utils.UpdateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.stream.Stream;
 
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AUTHORIZER;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
-import static by.faeton.lyceumteacherbot.utils.TelegramCommand.MARKS_COMMAND;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
-public class MarksHandler implements Handler {
+public class MarksHandler extends Handler {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
-    private final DialogAttributesService dialogAttributesService;
     private final UserRepository userRepository;
     private final JournalService journalService;
     private final SchoolConfig schoolConfig;
 
+    public MarksHandler(DialogAttributesService dialogAttributesService, TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository, UserRepository userRepository, JournalService journalService, SchoolConfig schoolConfig) {
+        super(dialogAttributesService);
+        this.typeAndValueOfAbsenteeismRepository = typeAndValueOfAbsenteeismRepository;
+        this.userRepository = userRepository;
+        this.journalService = journalService;
+        this.schoolConfig = schoolConfig;
+    }
+
     @Override
-    public boolean isAppropriateTypeMessage(Update update) {
-        if (update.hasMessage()) {
-            Boolean b = dialogAttributesService
-                .find(getChatId(update))
-                .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.MARKS))
-                .orElse(false);
-            return b || update.getMessage().getText().equals(MARKS_COMMAND);
-        }
-        if (update.hasCallbackQuery()) {
-            return dialogAttributesService
-                .find(getChatId(update))
-                .map(dialogAttribute -> dialogAttribute.getDialogTypeStarted().equals(DialogTypeStarted.MARKS))
-                .orElse(false);
-        }
-        return false;
+    DialogType getType() {
+        return DialogType.MARKS;
     }
 
     @Override
     public List<BotApiMethod> execute(Update update) {
+        Long chatId = UpdateUtil.getChatId(update);
         List<BotApiMethod> sendMessages = new ArrayList<>();
-        Message message = update.getMessage();
-        Long chatId = message.getChatId();
-        Optional<User> optionalUser = userRepository.findByTelegramId(chatId);
-        switch (message.getText()) {
-            case MARKS_COMMAND -> optionalUser.ifPresentOrElse(user -> sendMessages.add(SendMessage.builder()
-                    .chatId(chatId)
-                    .text(arrivedMarks(user))
-                    .build()),
+
+        if (update.hasMessage()) {
+            MarksDTO quarterMarksDTO = new MarksDTO();
+            Optional<User> optionalUser = userRepository.findByTelegramId(chatId);
+            List<Pair<String, String>> list = Stream.of(Statement.FIRST_QUARTER, Statement.SECOND_QUARTER, Statement.THREE_QUARTER, Statement.FOUR_QUARTER)
+                .map(e -> {
+                    quarterMarksDTO.setQuarter(e.name());
+                    String s = generateJsonWithPrefix(quarterMarksDTO);
+                    return new Pair<>(e.getStatementName(), s);
+                })
+                .toList();
+            optionalUser.ifPresentOrElse(user -> {
+                    sendMessages.add(KeyboardUtil.getKeyboard(chatId, "Четверть", list));
+                },
                 () -> sendMessages.add(SendMessage.builder()
                     .chatId(chatId)
                     .text(NOT_AUTHORIZER)
                     .build()));
+        }
+        if (update.hasCallbackQuery()) {
+            MarksDTO dtoFromCallback = getDTOFromCallback(update, MarksDTO.class);
 
+            userRepository.findByTelegramId(chatId).ifPresent(user -> {
+                String s = arrivedMarks(user, dtoFromCallback);
+                sendMessages.add(SendMessage.builder()
+                    .chatId(chatId)
+                    .text(s)
+                    .build());
+                sendMessages.add(EditMessageText.builder()
+                    .chatId(chatId)
+                    .text(Statement.valueOf(dtoFromCallback.getQuarter()).getStatementName())
+                    .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                    .build());
+            });
         }
         return sendMessages;
     }
 
-    private String arrivedMarks(User user) {
-        List<NumberDateSubject> numbers = journalService.getNumbers(user.getSubjectOfEducationId(), schoolConfig.currentAcademicYear());
+    private String arrivedMarks(User user, MarksDTO dtoFromCallback) {
+        Statement statement = Statement.valueOf(dtoFromCallback.getQuarter());
+        List<NumberDateSubject> numbers = journalService.getNumbers(user.getSubjectOfEducationId(), schoolConfig.currentAcademicYear(), statement);
         return linesToString(numbers);
     }
 
