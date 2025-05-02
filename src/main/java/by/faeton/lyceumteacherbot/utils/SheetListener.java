@@ -80,7 +80,7 @@ public class SheetListener {
     public void getSheetsService() {
         TeleBrowser teleBrowser = new TeleBrowser(messageSender);
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        credential = getCredentials(new AuthorizationCodeInstalledApp.DefaultBrowser(), HTTP_TRANSPORT, botConfig);
+        credential = getCredentials(teleBrowser, HTTP_TRANSPORT, botConfig);
         Sheets build = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
             .setApplicationName(botConfig.botName())
             .build();
