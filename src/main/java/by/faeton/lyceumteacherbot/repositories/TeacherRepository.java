@@ -3,7 +3,7 @@ package by.faeton.lyceumteacherbot.repositories;
 import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.config.SheetConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
-import by.faeton.lyceumteacherbot.model.lyceum.Teacher;
+import by.faeton.lyceumteacherbot.model.Teacher;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +34,10 @@ public class TeacherRepository {
     public void refreshContext() {
         teachers.clear();
         teachers.addAll(sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.allTeachers(), fieldsNameConfig.allTeachers()).orElseThrow().stream()
-                .map(strings -> Teacher.builder()
-                        .teacherId(strings.get(0))
-                        .name(strings.get(1))
-                        .build())
-                .collect(Collectors.toCollection(ArrayList::new)));
+            .map(strings -> Teacher.builder()
+                .teacherId(strings.get(0))
+                .name(strings.get(1))
+                .build())
+            .collect(Collectors.toCollection(ArrayList::new)));
     }
 }

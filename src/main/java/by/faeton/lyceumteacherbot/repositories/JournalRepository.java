@@ -3,16 +3,16 @@ package by.faeton.lyceumteacherbot.repositories;
 import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.config.SheetConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
-import by.faeton.lyceumteacherbot.model.lyceum.ConsolidatedStatement;
-import by.faeton.lyceumteacherbot.model.lyceum.ConsolidatedSubject;
-import by.faeton.lyceumteacherbot.model.lyceum.Journal;
-import by.faeton.lyceumteacherbot.model.lyceum.SchoolYearSchedule;
-import by.faeton.lyceumteacherbot.model.lyceum.Student;
-import by.faeton.lyceumteacherbot.model.lyceum.Subject;
-import by.faeton.lyceumteacherbot.model.lyceum.SubjectNumber;
-import by.faeton.lyceumteacherbot.model.lyceum.SubjectSchedule;
-import by.faeton.lyceumteacherbot.model.lyceum.Task;
-import by.faeton.lyceumteacherbot.model.lyceum.Teacher;
+import by.faeton.lyceumteacherbot.model.ConsolidatedStatement;
+import by.faeton.lyceumteacherbot.model.ConsolidatedSubject;
+import by.faeton.lyceumteacherbot.model.Journal;
+import by.faeton.lyceumteacherbot.model.SchoolYearSchedule;
+import by.faeton.lyceumteacherbot.model.Student;
+import by.faeton.lyceumteacherbot.model.Subject;
+import by.faeton.lyceumteacherbot.model.SubjectNumber;
+import by.faeton.lyceumteacherbot.model.SubjectSchedule;
+import by.faeton.lyceumteacherbot.model.Task;
+import by.faeton.lyceumteacherbot.model.Teacher;
 import by.faeton.lyceumteacherbot.utils.CellAddressGenerator;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -51,24 +51,24 @@ public class JournalRepository {
 
     public Optional<Journal> findByClassLetterAndClassParallelAndYear(String classLetter, String classParallel, Integer year) {
         return journals.stream()
-                .filter(journal -> journal.getEducationalYear().equals(year))
-                .filter(journal -> journal.getClassLetter().equals(classLetter))
-                .filter(journal -> journal.getClassParallel().equals(classParallel))
-                .findFirst();
+            .filter(journal -> journal.getEducationalYear().equals(year))
+            .filter(journal -> journal.getClassLetter().equals(classLetter))
+            .filter(journal -> journal.getClassParallel().equals(classParallel))
+            .findFirst();
     }
 
     public List<Journal> findAllByYear(Integer year) {
         return journals.stream()
-                .filter(journal -> journal.getEducationalYear().equals(year))
-                .toList();
+            .filter(journal -> journal.getEducationalYear().equals(year))
+            .toList();
     }
 
     public Optional<Journal> findByStudentIdAndYear(String studentId, Integer year) {
         return journals.stream()
-                .filter(journal -> journal.getEducationalYear().equals(year))
-                .filter(journal -> journal.getStudents().stream()
-                        .anyMatch(student -> student.getStudentId().equals(studentId)))
-                .findAny();
+            .filter(journal -> journal.getEducationalYear().equals(year))
+            .filter(journal -> journal.getStudents().stream()
+                .anyMatch(student -> student.getStudentId().equals(studentId)))
+            .findAny();
     }
 
     public Set<String> getClassParallels() {
@@ -89,23 +89,23 @@ public class JournalRepository {
 
             //students of journal
             List<Student> studentList = sheetListener.getSheetList(sheetId, sheetListNameConfig.students(), fieldsNameConfig.students()).orElseThrow().stream()
-                    .map(strings -> studentsRepository.findByStudentId(strings.get(0)).orElseThrow())
-                    .collect(Collectors.toCollection(ArrayList::new));
+                .map(strings -> studentsRepository.findByStudentId(strings.get(0)).orElseThrow())
+                .collect(Collectors.toCollection(ArrayList::new));
 
             //subjects and teachers
             Set<Teacher> teachers = new HashSet<>();
             List<Subject> subjects = sheetListener.getSheetList(sheetId, sheetListNameConfig.subjects(), fieldsNameConfig.subjects()).orElseThrow().stream()
-                    .map(string -> {
-                        Teacher byTeacherId = teacherRepository.findByTeacherId(string.get(2)).orElseThrow();
-                        teachers.add(byTeacherId);
-                        return Subject.builder()
-                                .id(Long.parseLong(string.get(0)))
-                                .name(string.get(1))
-                                .teacher(byTeacherId)
-                                .tasks(new ArrayList<>())
-                                .build();
-                    })
-                    .collect(Collectors.toCollection(ArrayList::new));
+                .map(string -> {
+                    Teacher byTeacherId = teacherRepository.findByTeacherId(string.get(2)).orElseThrow();
+                    teachers.add(byTeacherId);
+                    return Subject.builder()
+                        .id(Long.parseLong(string.get(0)))
+                        .name(string.get(1))
+                        .teacher(byTeacherId)
+                        .tasks(new ArrayList<>())
+                        .build();
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
 
             //subjectSchedule
             List<List<String>> subjectsScheduleList = sheetListener.getSheetList(sheetId, sheetListNameConfig.schedule(), fieldsNameConfig.schedule()).orElseThrow();
@@ -120,15 +120,15 @@ public class JournalRepository {
             //schedule Year
             List<List<String>> schoolYearScheduleStr = sheetListener.getSheetList(sheetId, sheetListNameConfig.yearSchedule(), fieldsNameConfig.yearSchedule()).orElseThrow();
             SchoolYearSchedule schoolYearSchedule = SchoolYearSchedule.builder()
-                    .firstQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(1).get(1), formatter))
-                    .firstQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(1).get(2), formatter))
-                    .secondQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(2).get(1), formatter))
-                    .secondQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(2).get(2), formatter))
-                    .threeQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(3).get(1), formatter))
-                    .threeQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(3).get(2), formatter))
-                    .fourQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(4).get(1), formatter))
-                    .fourQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(4).get(2), formatter))
-                    .build();
+                .firstQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(1).get(1), formatter))
+                .firstQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(1).get(2), formatter))
+                .secondQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(2).get(1), formatter))
+                .secondQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(2).get(2), formatter))
+                .threeQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(3).get(1), formatter))
+                .threeQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(3).get(2), formatter))
+                .fourQuarterStart(LocalDate.parse(schoolYearScheduleStr.get(4).get(1), formatter))
+                .fourQuarterEnd(LocalDate.parse(schoolYearScheduleStr.get(4).get(2), formatter))
+                .build();
 
             //consolidate statement
             ConsolidatedStatement consolidatedStatement = new ConsolidatedStatement();
@@ -144,56 +144,60 @@ public class JournalRepository {
             List<List<String>> tasks = sheetListener.getSheetList(sheetId, sheetListNameConfig.tasks(), fieldsNameConfig.tasks()).orElseThrow();
 
             for (int i = 3; i < tasks.get(0).size() - 1; i++) {
-                String subject = tasks.get(4).get(i);
-                Optional<Subject> first = subjects.stream()
+                try {
+                    String subject = tasks.get(4).get(i);
+                    Optional<Subject> first = subjects.stream()
                         .filter(s -> s.getName().equals(subject))
                         .findFirst();
-                if (first.isPresent()) {
-                    Task task = Task.builder()
+                    if (first.isPresent()) {
+                        Task task = Task.builder()
                             .taskId(CellAddressGenerator.convertNumberColumnToLetter(i + 1))
                             .date(LocalDate.of(
-                                    Integer.parseInt(tasks.get(2).get(i)),
-                                    Integer.parseInt(tasks.get(1).get(i)),
-                                    Integer.parseInt(tasks.get(0).get(i))
+                                Integer.parseInt(tasks.get(2).get(i)),
+                                Integer.parseInt(tasks.get(1).get(i)),
+                                Integer.parseInt(tasks.get(0).get(i))
                             ))
                             .themeName(tasks.get(5).get(i))
                             .homeWork(tasks.get(6).get(i))
                             .subjectNumbers(new ArrayList<>())
                             .taskNumber(Integer.valueOf(tasks.get(3).get(i)))
                             .build();
-                    first.get().getTasks().add(task);
-                    for (int j = 7; j < tasks.size() - 1; j++) {
-                        Optional<Student> byStudentId = studentsRepository.findByStudentId(tasks.get(j).get(1));
-                        String value = tasks.get(j).get(i);
-                        if (byStudentId.isPresent() && !value.isEmpty()) {
-                            SubjectNumber subjectNumber1 = SubjectNumber.builder()
+                        first.get().getTasks().add(task);
+                        for (int j = 7; j < tasks.size() - 1; j++) {
+                            Optional<Student> byStudentId = studentsRepository.findByStudentId(tasks.get(j).get(1));
+                            String value = tasks.get(j).get(i);
+                            if (byStudentId.isPresent() && !value.isEmpty()) {
+                                SubjectNumber subjectNumber1 = SubjectNumber.builder()
                                     .id((long) (j + 1))
                                     .valueOfTask(value)
                                     .student(byStudentId.get())
                                     .build();
-                            task.getSubjectNumbers().add(subjectNumber1);
+                                task.getSubjectNumbers().add(subjectNumber1);
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    System.out.println("Problem: " + e);
                 }
             }
 
             Optional<Teacher> byTeacherId = teacherRepository.findByTeacherId(journal.get(4));
 
             byTeacherId.ifPresent(teacher -> journalList.add(
-                    Journal.builder()
-                            .classroomTeacher(teacher)
-                            .students(studentList)
-                            .teachers(teachers.stream().toList())
-                            .subjects(subjects)
-                            .schoolYearSchedule(schoolYearSchedule)
-                            .consolidatedStatement(consolidatedStatement)
-                            .subjectSchedules(subjectSchedules)
-                            .classParallel(journal.get(1))
-                            .classLetter(journal.get(2))
-                            .nameGUO(journal.get(3))
-                            .journalId(journal.get(5))
-                            .educationalYear(Integer.valueOf(journal.get(6)))
-                            .build()));
+                Journal.builder()
+                    .classroomTeacher(teacher)
+                    .students(studentList)
+                    .teachers(teachers.stream().toList())
+                    .subjects(subjects)
+                    .schoolYearSchedule(schoolYearSchedule)
+                    .consolidatedStatement(consolidatedStatement)
+                    .subjectSchedules(subjectSchedules)
+                    .classParallel(journal.get(1))
+                    .classLetter(journal.get(2))
+                    .nameGUO(journal.get(3))
+                    .journalId(journal.get(5))
+                    .educationalYear(Integer.valueOf(journal.get(6)))
+                    .build()));
         }
         journals.clear();
         journals.addAll(journalList);
@@ -213,8 +217,8 @@ public class JournalRepository {
         for (int i = 3; i < consStat.get(0).size() - 1; i++) {
             String subject = consStat.get(0).get(i);
             Optional<Subject> first = subjects.stream()
-                    .filter(s -> s.getName().equals(subject))
-                    .findFirst();
+                .filter(s -> s.getName().equals(subject))
+                .findFirst();
             if (first.isPresent()) {
                 ConsolidatedSubject consolidatedSubject = new ConsolidatedSubject();
                 consolidatedSubject.setSubject(first.get());
@@ -226,9 +230,9 @@ public class JournalRepository {
                         String subjectNumber = consStat.get(j).get(i);
                         if (!subjectNumber.isEmpty()) {
                             SubjectNumber subjectNumber1 = SubjectNumber.builder()
-                                    .valueOfTask(subjectNumber)
-                                    .student(byStudentId.get())
-                                    .build();
+                                .valueOfTask(subjectNumber)
+                                .student(byStudentId.get())
+                                .build();
                             consolidatedSubject.getSubjectNumber().add(subjectNumber1);
                             consolidatedSubject.setId((long) j + 1);
                         }
@@ -246,14 +250,14 @@ public class JournalRepository {
             int a = j;
             if (!strings.get(a).isEmpty()) {
                 subjectSchedules.add(SubjectSchedule.builder()
-                        .semester(semester)
-                        .dayOfWeek(DayOfWeek.of(j))
-                        .subjectNumber(i)
-                        .subject(subjects.stream()
-                                .filter(subject -> subject.getName().equals(strings.get(a)))
-                                .findFirst()
-                                .orElseThrow())
-                        .build());
+                    .semester(semester)
+                    .dayOfWeek(DayOfWeek.of(j))
+                    .subjectNumber(i - 1)
+                    .subject(subjects.stream()
+                        .filter(subject -> subject.getName().equals(strings.get(a)))
+                        .findFirst()
+                        .orElseThrow())
+                    .build());
             }
         }
     }
@@ -261,22 +265,22 @@ public class JournalRepository {
     public boolean save(Journal journal) {
         List<ValueRange> data = new ArrayList<>();
         journal.getSubjects()
-                .forEach(subject -> subject.getTasks()
-                        .forEach(task -> task.getSubjectNumbers()
-                                .forEach(subjectNumber -> {
-                                    if (subjectNumber.getId() == null) {
-                                        int columnNumber = getColumnNumber(task);
-                                        String substring = subjectNumber.getStudent().getStudentId().substring(6);
-                                        int integer = Integer.parseInt(substring);
-                                        String s = CellAddressGenerator.convertNumberColumnToLetter(columnNumber);
-                                        data.add(new ValueRange()
-                                                .setRange(sheetListNameConfig.tasks() + "!" + s + integer)
-                                                .setValues(List.of(List.of(subjectNumber.getValueOfTask()))));
-                                        subjectNumber.setId(1L);
-                                    }
-                                })
-                        )
-                );
+            .forEach(subject -> subject.getTasks()
+                .forEach(task -> task.getSubjectNumbers()
+                    .forEach(subjectNumber -> {
+                        if (subjectNumber.getId() == null) {
+                            int columnNumber = getColumnNumber(task);
+                            String substring = subjectNumber.getStudent().getStudentId().substring(6);
+                            int integer = Integer.parseInt(substring);
+                            String s = CellAddressGenerator.convertNumberColumnToLetter(columnNumber);
+                            data.add(new ValueRange()
+                                .setRange(sheetListNameConfig.tasks() + "!" + s + integer)
+                                .setValues(List.of(List.of(subjectNumber.getValueOfTask()))));
+                            subjectNumber.setId(1L);
+                        }
+                    })
+                )
+            );
 
         sheetListener.writeSheet(journal.getJournalId(), data);
         return true;
@@ -289,7 +293,7 @@ public class JournalRepository {
         if (month > 8) {
             columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month - 9)) + task.getTaskNumber() + 3;
         } else {
-            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month + 4)) + task.getTaskNumber() + 3;
+            columnNumber = dayOfMonth * 8 - 7 + (31 * 8 * (month + 3)) + task.getTaskNumber() + 3;
         }
         return columnNumber;
     }

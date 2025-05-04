@@ -1,3 +1,6 @@
+spring:
+  profiles:
+    active: prod
 bot:
   botName: name
   botToken: token
@@ -8,51 +11,36 @@ url:
   sheetId: sheetId
 sheet-config:
   fields-name:
-     journals: A2:G100
-     students: B2:B31
-     subjects: A2:C31
-     schedule: A1:H20
-     yearSchedule: A1:D6
-     tasks: A1:CGZ38
-     consolidateStatement: A1:AC32
-     allStudents: A2:F100
-     allTeachers: A2:F100
-     absenteeismType: A2:B10
+    journals: A2:G
+    students: B2:B31
+    subjects: A2:C31
+    schedule: A1:H20
+    yearSchedule: A1:D6
+    tasks: A1:CGZ38
+    consolidateStatement: A1:AC32
+    allStudents: A2:F
+    allTeachers: A2:F
+    absenteeismType: A2:B10
   sheet-lists:
-     journals: journals
-     students: students
-     subjects: subjects
-     schedule: schedule
-     yearSchedule: yearSchedule
-     tasks: tasks
-     firstQuarterNumbers: firstQuarterNumbers
-     secondQuarterNumbers: secondQuarterNumbers
-     threeQuarterNumbers: threeQuarterNumbers
-     fourQuarterNumbers: fourQuarterNumbers
-     yearNumbers: yearNumbers
-     examNumbers: examNumbers
-     finalNumbers: finalNumbers
-     baseIdList: baseIdList
-     allStudents: students
-     allTeachers: teachers
-     absenteeismType: absenteeismType
-     logsList: logs!A1
+    journals: journals
+    students: students
+    subjects: subjects
+    schedule: schedule
+    yearSchedule: yearSchedule
+    tasks: tasks
+    firstQuarterNumbers: firstQuarterNumbers
+    secondQuarterNumbers: secondQuarterNumbers
+    threeQuarterNumbers: threeQuarterNumbers
+    fourQuarterNumbers: fourQuarterNumbers
+    yearNumbers: yearNumbers
+    examNumbers: examNumbers
+    finalNumbers: finalNumbers
+    baseIdList: baseIdList
+    allStudents: students
+    allTeachers: teachers
+    absenteeismType: absenteeismType
+    logsList: logs!A1
 school:
   currentAcademicYear: 2024
   firstLesson: 0
   lastLesson: 7
-spring:
-  datasource:
-    url: jdbc:h2:mem:mydb
-    username: sa
-    password: password
-    driverClassName: org.h2.Driver
-    h2:
-      console:
-        enabled: true
-  jpa:
-    hibernate:
-        ddl-auto: create
-    generate-ddl: true
-    show-sql: true
-    database-platform: org.hibernate.dialect.H2Dialect

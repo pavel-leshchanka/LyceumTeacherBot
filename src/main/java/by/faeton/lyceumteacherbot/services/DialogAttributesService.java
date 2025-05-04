@@ -1,40 +1,33 @@
 package by.faeton.lyceumteacherbot.services;
 
-import by.faeton.lyceumteacherbot.model.DialogAttribute;
-import by.faeton.lyceumteacherbot.model.DialogTypeStarted;
-import by.faeton.lyceumteacherbot.repositories.DialogAttributeRepository;
+import by.faeton.lyceumteacherbot.controllers.DialogType;
+import by.faeton.lyceumteacherbot.controllers.handlers.dto.CommandHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class DialogAttributesService {
-    private final DialogAttributeRepository dialogAttributeRepository;
 
-    public Optional<DialogAttribute> find(Long chatId) {
-        return dialogAttributeRepository.findByDialogId(chatId);
+    private final Map<Long, CommandHandler> commandHandlerMap = new HashMap<>();
+
+    public boolean exist(Long chatId, DialogType type) {
+        CommandHandler commandHandler = commandHandlerMap.get(chatId);
+        return commandHandler != null && commandHandler.getType().equals(type);
     }
 
-    public void createDialog(DialogTypeStarted dialogTypeStarted, Long chatId) {
-        DialogAttribute build = DialogAttribute.builder()
-                .dialogId(chatId)
-                .dialogTypeStarted(dialogTypeStarted)
-                .stepOfDialog(0)
-                .receivedData(new ArrayList<>())
-                .build();
-        dialogAttributeRepository.save(build);
+    public void save(Long chatId, CommandHandler handler) {
+        commandHandlerMap.put(chatId, handler);
     }
 
-    public void nextStep(DialogAttribute dialogAttribute, String receivedData) {
-        dialogAttribute.getReceivedData().add(receivedData);
-        dialogAttribute.setStepOfDialog(dialogAttribute.getStepOfDialog() + 1);
-        dialogAttributeRepository.save(dialogAttribute);
+    public CommandHandler find(Long chatId) {
+        return commandHandlerMap.get(chatId);
     }
 
-    public void deleteByTelegramId(Long chatId) {
-        dialogAttributeRepository.deleteByDialogId(chatId);
+    public void delete(Long chatId) {
+        commandHandlerMap.remove(chatId);
     }
 }
