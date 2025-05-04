@@ -27,6 +27,7 @@ dependencies {
     implementation("com.google.oauth-client:google-oauth-client-jetty:1.36.0")
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.telegram:telegrambots-client:7.9.1")
     implementation("org.telegram:telegrambots-springboot-longpolling-starter:7.9.1")
 }

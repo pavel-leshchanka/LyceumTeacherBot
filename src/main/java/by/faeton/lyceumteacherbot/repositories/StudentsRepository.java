@@ -3,7 +3,7 @@ package by.faeton.lyceumteacherbot.repositories;
 import by.faeton.lyceumteacherbot.config.FieldsNameConfig;
 import by.faeton.lyceumteacherbot.config.SheetConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
-import by.faeton.lyceumteacherbot.model.lyceum.Student;
+import by.faeton.lyceumteacherbot.model.Student;
 import by.faeton.lyceumteacherbot.utils.SheetListener;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +30,8 @@ public class StudentsRepository {
 
     public Optional<Student> findByStudentId(String studentId) {
         return students.stream()
-                .filter(student -> student.getStudentId().equals(studentId))
-                .findFirst();
+            .filter(student -> student.getStudentId().equals(studentId))
+            .findFirst();
     }
 
     public Set<String> getAllStudentsSex() {
@@ -42,14 +42,14 @@ public class StudentsRepository {
     public void refreshContext() {
         students.clear();
         students.addAll(sheetListener.getSheetList(sheetConfig.sheetId(), sheetListNameConfig.allStudents(), fieldsNameConfig.allStudents()).orElseThrow().stream()
-                .map(strings -> Student.builder()
-                        .studentId(strings.get(0))
-                        .userLastName(strings.get(1))
-                        .userFirstName(strings.get(2))
-                        .userFatherName(strings.get(3))
-                        .sex(strings.get(4))
-                        .build())
-                .collect(Collectors.toCollection(ArrayList::new)));
+            .map(strings -> Student.builder()
+                .studentId(strings.get(0))
+                .userLastName(strings.get(1))
+                .userFirstName(strings.get(2))
+                .userFatherName(strings.get(3))
+                .sex(strings.get(4))
+                .build())
+            .collect(Collectors.toCollection(ArrayList::new)));
         sex.clear();
         students.forEach(student -> {
             String studentSex = student.getSex();

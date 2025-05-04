@@ -1,6 +1,6 @@
 package by.faeton.lyceumteacherbot.utils;
 
-import by.faeton.lyceumteacherbot.model.User;
+import by.faeton.lyceumteacherbot.security.TelegramUser;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public class Logger {
         Logger.sheetListener = sheetListener;
     }
 
-    public static void log(Long chatId, User user, String message) {
+    public static void log(Long chatId, TelegramUser user, String message) {
         sheetListener.writeLog(List.of(List.of(chatId, user.getUserFirstName(), user.getUserLastName(), message)));
     }
 

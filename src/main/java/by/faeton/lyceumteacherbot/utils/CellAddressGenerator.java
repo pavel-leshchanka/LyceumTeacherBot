@@ -1,11 +1,11 @@
 package by.faeton.lyceumteacherbot.utils;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class CellAddressGenerator {
     private static final Integer NUMBER_OF_LETTERS = 26;
     private static final Integer SHIFT_TO_LETTER_A = 64;
-
-    private CellAddressGenerator() {
-    }
 
     public static String convertNumberColumnToLetter(Integer columnNumber) {
         int number = columnNumber;

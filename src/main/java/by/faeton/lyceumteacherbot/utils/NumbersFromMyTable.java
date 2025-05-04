@@ -1,8 +1,8 @@
 package by.faeton.lyceumteacherbot.utils;
 
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
-import by.faeton.lyceumteacherbot.model.lyceum.SubjectNumber;
-import by.faeton.lyceumteacherbot.model.lyceum.Task;
+import by.faeton.lyceumteacherbot.model.SubjectNumber;
+import by.faeton.lyceumteacherbot.model.Task;
 import by.faeton.lyceumteacherbot.repositories.JournalRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

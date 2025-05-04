@@ -4,7 +4,6 @@ package by.faeton.lyceumteacherbot.utils;
 import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.config.SheetConfig;
 import by.faeton.lyceumteacherbot.config.SheetListNameConfig;
-import by.faeton.lyceumteacherbot.config.TeleBrowser;
 import by.faeton.lyceumteacherbot.controllers.MessageSender;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -78,9 +77,9 @@ public class SheetListener {
     @PostConstruct
     @SneakyThrows
     public void getSheetsService() {
-        TeleBrowser teleBrowser = new TeleBrowser(messageSender);
+        TelegramGoogleBrowser telegramGoogleBrowser = new TelegramGoogleBrowser(messageSender, botConfig);
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        credential = getCredentials(teleBrowser, HTTP_TRANSPORT, botConfig);
+        credential = getCredentials(telegramGoogleBrowser, HTTP_TRANSPORT, botConfig);
         Sheets build = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
             .setApplicationName(botConfig.botName())
             .build();

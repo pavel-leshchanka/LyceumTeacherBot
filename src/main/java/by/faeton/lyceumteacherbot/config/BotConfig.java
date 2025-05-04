@@ -10,6 +10,7 @@ public record BotConfig(
     String botName,
     String botToken,
     String credentialsFilePath,
-    String tokensFolder
+    String tokensFolder,
+    Long adminId
 ) {
 }

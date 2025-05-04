@@ -14,6 +14,7 @@ public enum DialogType {
     REFRESH("/refresh", "-6-"),
     REGISTER("/register", "-7-"),
     SEND_MESSAGE("/send_message", "-8-"),
+    SCHEDULE("/schedule", "-a-"),
     START("/start", "-9-");
 
     private final String command;

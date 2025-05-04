@@ -16,7 +16,9 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.HELP;
 @Slf4j
 @Component
 public class HelpHandler extends Handler {
-    public HelpHandler(DialogAttributesService dialogAttributesService) {
+    public HelpHandler(
+        DialogAttributesService dialogAttributesService
+    ) {
         super(dialogAttributesService);
     }
 

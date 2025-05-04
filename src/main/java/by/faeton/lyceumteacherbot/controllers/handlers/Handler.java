@@ -1,7 +1,7 @@
 package by.faeton.lyceumteacherbot.controllers.handlers;
 
 import by.faeton.lyceumteacherbot.controllers.DialogType;
-import by.faeton.lyceumteacherbot.controllers.handlers.DTO.CommandHandler;
+import by.faeton.lyceumteacherbot.controllers.handlers.dto.CommandHandler;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.utils.UpdateUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,17 +14,19 @@ import java.util.List;
 
 @AllArgsConstructor
 public abstract class Handler {
-    public abstract List<BotApiMethod> execute(Update update);
-
     final DialogAttributesService dialogAttributesService;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public abstract List<BotApiMethod> execute(Update update);
+
+    abstract DialogType getType();
 
     public boolean isAppropriateTypeMessage(Update update) {
         DialogType type = getType();
         boolean isAppropriateCommand = update.hasMessage() && update.getMessage().getText().equals(type.getCommand());
         boolean isAppropriateCallback = update.hasCallbackQuery() && update.getCallbackQuery().getData().substring(0, 3).equals(type.getPrefix());
-        boolean isCancel = update.hasCallbackQuery() && update.getCallbackQuery().getData().equals(CancelHandler.CANCEL_CALLBACK);
-        boolean isDialogStarted = dialogAttributesService.supported(UpdateUtil.getChatId(update), getType());
+        boolean isCancel = update.hasCallbackQuery() && update.getCallbackQuery().getData().equals(CancelHandler.getCancelCallback());
+        boolean isDialogStarted = dialogAttributesService.exist(UpdateUtil.getChatId(update), getType());
         return isAppropriateCommand || isAppropriateCallback || (isDialogStarted && !isCancel);
     }
 
@@ -47,6 +49,4 @@ public abstract class Handler {
             throw new RuntimeException(e);
         }
     }
-
-    abstract DialogType getType();
 }

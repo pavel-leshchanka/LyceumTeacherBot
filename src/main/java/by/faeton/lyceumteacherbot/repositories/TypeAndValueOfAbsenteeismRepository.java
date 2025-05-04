@@ -19,7 +19,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TypeAndValueOfAbsenteeismRepository {
 
-
     private final SheetListener sheetListener;
     private final SheetConfig sheetConfig;
     private final SheetListNameConfig sheetListNameConfig;

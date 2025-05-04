@@ -13,8 +13,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Component
 @RequiredArgsConstructor
 public class MessageSender {
-    public static final String USER_MESSAGE_ARRIVED = "User {} message arrived.";
-    public static final String USER_MESSAGE_NOT_ARRIVED = "User {} message not arrived.";
+    private static final String USER_MESSAGE_ARRIVED = "User {} message arrived.";
+    private static final String USER_MESSAGE_NOT_ARRIVED = "User {} message not arrived.";
     private final TelegramClient telegramClient;
 
     public void sendUserMessage(BotApiMethod<?> sendMessage) {
