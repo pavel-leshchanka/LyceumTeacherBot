@@ -8,6 +8,7 @@ import by.faeton.lyceumteacherbot.model.dto.NumberDateSubject;
 import by.faeton.lyceumteacherbot.model.dto.NumberSubject;
 import by.faeton.lyceumteacherbot.repositories.TypeAndValueOfAbsenteeismRepository;
 import by.faeton.lyceumteacherbot.security.TelegramUser;
+import by.faeton.lyceumteacherbot.utils.DefaultMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NOT_AVAILABLE;
 @RequiredArgsConstructor
 public class MarksService {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
     private final TypeAndValueOfAbsenteeismRepository typeAndValueOfAbsenteeismRepository;
     private final JournalService journalService;
     private final SchoolConfig schoolConfig;
@@ -35,18 +37,16 @@ public class MarksService {
 
     private String linesToString(List<NumberDateSubject> numberDateSubjects) {
         StringBuilder stringBuilder = new StringBuilder();
-        numberDateSubjects
-            .stream()
+        numberDateSubjects.stream()
             .filter(n -> !typeAndValueOfAbsenteeismRepository.getAllTypeAndValueOfAbsenteeism().keySet().contains(n.getNumber()))
-            .forEach(numberDateSubject -> stringBuilder
-                .append(numberDateSubject.getDate().format(formatter))
-                .append(" ")
-                .append(numberDateSubject.getSubjectName())
-                .append(" ")
-                .append(numberDateSubject.getTypeOfWork())
-                .append(" ")
-                .append(numberDateSubject.getNumber())
-                .append("\n"));
+            .forEach(numberDateSubject -> stringBuilder.append("%s %s %s: %s %n".formatted(
+                        numberDateSubject.getDate().format(formatter),
+                        numberDateSubject.getSubjectName(),
+                        numberDateSubject.getTypeOfWork(),
+                        numberDateSubject.getNumber()
+                    )
+                )
+            );
         if (stringBuilder.isEmpty()) {
             stringBuilder.append(NOT_AVAILABLE);
         } else {
@@ -55,7 +55,7 @@ public class MarksService {
                 .filter(number -> number.matches("\\d+"))
                 .mapToDouble(Double::parseDouble)
                 .average();
-            stringBuilder.append("Среднее: ");
+            stringBuilder.append(DefaultMessages.AVERAGE);
             stringBuilder.append(average.orElseGet(() -> 0.0));
         }
         return stringBuilder.toString();
@@ -70,12 +70,22 @@ public class MarksService {
     private String linesToString1(List<NumberSubject> numberSubjects) {
         StringBuilder stringBuilder = new StringBuilder();
         numberSubjects
-            .forEach(numberDateSubject -> stringBuilder.append(numberDateSubject.getSubjectName())
-                .append(numberDateSubject.getNumber())
-                .append(" ")
-                .append("\n"));
+            .forEach(numberDateSubject -> stringBuilder.append("%s: %s %n".formatted(
+                        numberDateSubject.getSubjectName(),
+                        numberDateSubject.getNumber()
+                    )
+                )
+            );
         if (stringBuilder.isEmpty()) {
             stringBuilder.append(NOT_AVAILABLE);
+        } else {
+            OptionalDouble average = numberSubjects.stream()
+                .map(NumberSubject::getNumber)
+                .filter(number -> number.matches("\\d+"))
+                .mapToDouble(Double::parseDouble)
+                .average();
+            stringBuilder.append(DefaultMessages.AVERAGE);
+            stringBuilder.append(average.orElseGet(() -> 0.0));
         }
         return stringBuilder.toString();
     }

@@ -58,6 +58,13 @@ public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThr
                     .toList();
                 messages.forEach(message -> message.forEach(messageSender::sendUserMessage));
             } catch (AuthorizationDeniedException e) {
+                if (update.hasCallbackQuery()) {
+                    messageSender.sendUserMessage(EditMessageText.builder()
+                        .chatId(telegramId)
+                        .text(CANCELED)
+                        .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                        .build());
+                }
                 messageSender.sendUserMessage(SendMessage.builder()
                     .chatId(telegramId)
                     .text(NO_ACCESS)
@@ -65,11 +72,11 @@ public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThr
                 log.warn(NO_ACCESS, e);
             } catch (ResourceNotFoundException e) {
                 if (update.hasCallbackQuery()) {
-                    EditMessageText.builder()
+                    messageSender.sendUserMessage(EditMessageText.builder()
                         .chatId(telegramId)
                         .text(CANCELED)
                         .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                        .build();
+                        .build());
                 }
                 messageSender.sendUserMessage(SendMessage.builder()
                     .chatId(telegramId)

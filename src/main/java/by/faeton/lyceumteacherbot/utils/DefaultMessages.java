@@ -29,6 +29,7 @@ public class DefaultMessages {
     public static final String SEMESTR = "Семестр";
     public static final String DAYS = "День:";
     public static final String SUBJECT = "Предмет:";
+    public static final String AVERAGE = "Среднее: ";
     public static final String QUARTER = "Четверть";
     public static final String ENTER_NAME = "Введите имя:";
     public static final String ENTER_FATHERNAME = "Введите отчество:";

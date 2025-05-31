@@ -98,7 +98,7 @@ public class SendMessagesHandler extends Handler {
             if (dtoFromCallback.getClassLetters() == null) {
                 sendMessages.add(EditMessageText.builder()
                     .chatId(chatId)
-                    .text(update.getCallbackQuery().getData())
+                    .text(dtoFromCallback.getClassParallels())
                     .messageId(update.getCallbackQuery().getMessage().getMessageId())
                     .build());
                 Set<String> classLetters = journalService.getClassLetters();
@@ -114,7 +114,7 @@ public class SendMessagesHandler extends Handler {
             } else if (dtoFromCallback.getSex() == null) {
                 sendMessages.add(EditMessageText.builder()
                     .chatId(chatId)
-                    .text(update.getCallbackQuery().getData())
+                    .text(dtoFromCallback.getClassLetters())
                     .messageId(update.getCallbackQuery().getMessage().getMessageId())
                     .build());
                 Set<String> sexes = journalService.getAllStudentsSex();
@@ -130,7 +130,7 @@ public class SendMessagesHandler extends Handler {
             } else if (dtoFromCallback.getText() == null) {
                 sendMessages.add(EditMessageText.builder()
                     .chatId(chatId)
-                    .text(update.getCallbackQuery().getData())
+                    .text(dtoFromCallback.getSex())
                     .messageId(update.getCallbackQuery().getMessage().getMessageId())
                     .build());
                 sendMessages.add(SendMessage.builder()
