@@ -2,6 +2,7 @@ package by.faeton.lyceumteacherbot.controllers;
 
 import by.faeton.lyceumteacherbot.config.BotConfig;
 import by.faeton.lyceumteacherbot.controllers.handlers.Handler;
+import by.faeton.lyceumteacherbot.exceptions.ResourceNotFoundException;
 import by.faeton.lyceumteacherbot.security.TelegramUserRepository;
 import by.faeton.lyceumteacherbot.services.DialogAttributesService;
 import by.faeton.lyceumteacherbot.utils.Logger;
@@ -20,11 +21,13 @@ import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.ANOTHER_MESSAGES;
+import static by.faeton.lyceumteacherbot.utils.DefaultMessages.CANCELED;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NO_ACCESS;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.NO_MESSAGE;
 import static by.faeton.lyceumteacherbot.utils.DefaultMessages.TOO_MATCH_DIALOG_STARTED;
@@ -56,10 +59,23 @@ public class MessageBroker implements SpringLongPollingBot, LongPollingSingleThr
                 messages.forEach(message -> message.forEach(messageSender::sendUserMessage));
             } catch (AuthorizationDeniedException e) {
                 messageSender.sendUserMessage(SendMessage.builder()
-                    .chatId(UpdateUtil.getChatId(update))
+                    .chatId(telegramId)
                     .text(NO_ACCESS)
                     .build());
                 log.warn(NO_ACCESS, e);
+            } catch (ResourceNotFoundException e) {
+                if (update.hasCallbackQuery()) {
+                    EditMessageText.builder()
+                        .chatId(telegramId)
+                        .text(CANCELED)
+                        .messageId(update.getCallbackQuery().getMessage().getMessageId())
+                        .build();
+                }
+                messageSender.sendUserMessage(SendMessage.builder()
+                    .chatId(telegramId)
+                    .text(e.getMessage())
+                    .build());
+                log.warn(e.getMessage(), e);
             }
         } else if (appropriateHandlers.size() > 1) {
             dialogAttributesService.delete(telegramId);

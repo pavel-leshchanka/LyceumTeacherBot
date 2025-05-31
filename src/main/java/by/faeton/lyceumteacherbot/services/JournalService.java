@@ -2,6 +2,7 @@ package by.faeton.lyceumteacherbot.services;
 
 import by.faeton.lyceumteacherbot.config.SchoolConfig;
 import by.faeton.lyceumteacherbot.controllers.handlers.dto.SendMessagesDTO;
+import by.faeton.lyceumteacherbot.exceptions.ResourceNotFoundException;
 import by.faeton.lyceumteacherbot.model.ConsolidatedSubject;
 import by.faeton.lyceumteacherbot.model.Journal;
 import by.faeton.lyceumteacherbot.model.SchoolYearSchedule;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static by.faeton.lyceumteacherbot.controllers.handlers.SendMessagesHandler.ALL_CALLBACK;
+import static by.faeton.lyceumteacherbot.services.StudentService.JOURNAL_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class JournalService {
 
     public List<Subject> getSubjects(String studentId, Integer integer) {
         Journal journal = journalRepository.findByStudentIdAndYear(studentId, integer)
-            .orElseThrow();
+            .orElseThrow(() -> new ResourceNotFoundException(JOURNAL_NOT_FOUND));
         return journal.getSubjects();
     }
 
@@ -213,7 +215,7 @@ public class JournalService {
 
     public Journal findByClassLetterAndClassParallelAndYear(String classLetter, String classParallel, Integer integer) {
         return journalRepository.findByClassLetterAndClassParallelAndYear(classLetter, classParallel, integer)
-            .orElseThrow();
+            .orElseThrow(() -> new ResourceNotFoundException(JOURNAL_NOT_FOUND));
     }
 
     public Teacher findClassTeacher(String classLetter, String classParallel, Integer integer) {
@@ -230,7 +232,7 @@ public class JournalService {
 
     public List<SubjectSchedule> getSchedule(String classParallel, String classLetter, Integer integer) {
         return journalRepository.findByClassLetterAndClassParallelAndYear(classLetter, classParallel, integer)
-            .orElseThrow()
+            .orElseThrow(() -> new ResourceNotFoundException(JOURNAL_NOT_FOUND))
             .getSubjectSchedules();
     }
 }
